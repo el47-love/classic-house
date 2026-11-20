@@ -4,7 +4,23 @@ export default async function handler(req, res) {
     const db = adminClient();
     const auth = await requireUser(req, db);
     if (auth.error) return send(res, auth.status, { error: auth.error });
-    const { data: profile } = await db.from('profiles').select('role').eq('id', auth.user.id).single();
+    const { data: profile, error: profileError } = await db
+  .from('profiles')
+  .select('id, role')
+  .eq('id', auth.user.id)
+  .maybeSingle();
+
+if (profile?.role !== 'admin') {
+  return send(res, 403, {
+    error: 'Administrator access only',
+    diagnostic: {
+      signed_in_email: auth.user.email,
+      signed_in_user_id: auth.user.id,
+      profile_role: profile?.role || 'PROFILE NOT FOUND',
+      profile_error: profileError?.message || null
+    }
+  });
+}
     if (profile?.role !== 'admin') return send(res, 403, { error: 'Administrator access only' });
 
     if (req.method === 'GET') {
