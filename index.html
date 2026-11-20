@@ -68,7 +68,202 @@ async function registerArtist(){if(!supabaseReady){alert('The site owner must co
 document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseReady){alert('The site owner must configure Supabase first.');return;}try{const {data,error}=await sb.auth.signInWithPassword({email:document.getElementById('loginContact').value.trim(),password:document.getElementById('loginPassword').value});if(error)throw error;session=data.session;currentArtist=document.getElementById('loginName').value.trim()||data.user.user_metadata.artist_name||data.user.email;closeModal('loginModal');showDashboard();}catch(err){alert(err.message);}});
 function openPaymentWhatsApp(){if(!pendingSong)return;const message=`Hello Classic House.com, I have paid the K50 publishing fee for my song. Artist: ${currentArtist}. Song: ${pendingSong.title}. I am sending my Airtel Money payment screenshot for verification.`;window.open('https://wa.me/260779885869?text='+encodeURIComponent(message),'_blank','noopener');}
 async function reportManualPayment(){if(!pendingSong)return;try{const reference=document.getElementById('paymentReference').value.trim();const d=await api('/payments-manual',{method:'POST',body:{song_id:pendingSong.id,transaction_reference:reference||null}});closeModal('checkoutModal');document.getElementById('uploadForm').reset();document.getElementById('paymentReference').value='';alert(d.message);pendingSong=null;showDashboard();}catch(e){alert(e.message);}}
-async function showDashboard(){try{const d=await api('/my-songs');const mine=d.songs||[];document.getElementById('dashTitle').textContent=(currentArtist||'Artist')+' · Artist dashboard';document.getElementById('dashStats').innerHTML=`<div class="stat"><small>Submissions</small><strong>${mine.length}</strong></div><div class="stat"><small>Published</small><strong>${mine.filter(s=>s.status==='published').length}</strong></div><div class="stat"><small>Pending</small><strong>${mine.filter(s=>s.status!=='published').length}</strong></div>`;document.getElementById('dashContent').innerHTML=mine.length?`<div class="tablewrap"><table><tr><th>Song</th><th>Status</th><th>Payment</th></tr>${mine.map(s=>`<tr><td>${escapeHtml(s.title)}</td><td><span class="status">${escapeHtml(s.status)}</span></td><td>${escapeHtml(s.payment_status)}</td></tr>`).join('')}</table></div>`:'<p class="muted">No submissions yet. Upload your first song to get started.</p>';document.getElementById('dashboardNotice').textContent='Your artist account is signed in. Admin review tools are available only to authorised admin accounts.';openModal('dashboardModal');}catch(e){alert('Could not load dashboard: '+e.message);}}
+
+async function showDashboard() {
+  try {
+    const mineData = await api('/my-songs');
+    const mine = mineData.songs || [];
+
+    let isAdmin = false;
+    let adminError = null;
+
+    try {
+      await api('/admin-songs');
+      isAdmin = true;
+    } catch (error) {
+      adminError = error;
+    }
+
+    window.classicHouseIsAdmin = isAdmin;
+
+    document.getElementById('dashTitle').textContent =
+      isAdmin ? 'CLASSIC HOUSE · ADMIN DASHBOARD' :
+      (currentArtist || 'Artist') + ' · Artist dashboard';
+
+    document.getElementById('dashStats').innerHTML = isAdmin
+      ? `
+        <div class="stat"><small>Account</small><strong>ADMIN</strong></div>
+        <div class="stat"><small>Management</small><strong>Active</strong></div>
+        <div class="stat"><small>Reviews</small><strong>Open</strong></div>
+      `
+      : `
+        <div class="stat"><small>Submissions</small><strong>${mine.length}</strong></div>
+        <div class="stat"><small>Published</small><strong>${mine.filter(s => s.status === 'published').length}</strong></div>
+        <div class="stat"><small>Pending</small><strong>${mine.filter(s => s.status !== 'published').length}</strong></div>
+      `;
+
+    document.getElementById('dashboardNotice').textContent =
+      isAdmin
+        ? 'Administrator access confirmed. Manage artists, payments and music approvals here.'
+        : 'Artist account dashboard.';
+
+    openModal('dashboardModal');
+
+    const tabs = document.querySelectorAll('#dashboardModal .tabs .tab');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+
+    if (isAdmin) {
+      if (tabs[1]) tabs[1].classList.add('active');
+      await dashTab('admin', tabs[1]);
+    } else {
+      if (tabs[0]) tabs[0].classList.add('active');
+      await dashTab('submissions', tabs[0]);
+
+      if (adminError && !String(adminError.message || adminError).includes('Administrator access only')) {
+        document.getElementById('dashboardNotice').textContent +=
+          ' Admin check: ' + adminError.message;
+      }
+    }
+
+  } catch (error) {
+    alert('Dashboard error: ' + error.message);
+  }
+}
+
+
+async function dashTab(which, el) {
+
+  const content = document.getElementById('dashContent');
+  const notice = document.getElementById('dashboardNotice');
+
+  document.querySelectorAll('#dashboardModal .tabs .tab')
+    .forEach(tab => tab.classList.remove('active'));
+
+  if (el) el.classList.add('active');
+
+  content.innerHTML = '<p class="muted">Loading...</p>';
+
+  try {
+
+    if (which === 'submissions') {
+
+      const data = await api('/my-songs');
+      const mine = data.songs || [];
+
+      content.innerHTML = mine.length
+        ? `
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>Song</th>
+                <th>Status</th>
+                <th>Payment</th>
+              </tr>
+              ${mine.map(song => `
+                <tr>
+                  <td>${escapeHtml(song.title)}</td>
+                  <td>${escapeHtml(song.status)}</td>
+                  <td>${escapeHtml(song.payment_status)}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </div>
+        `
+        : '<p class="empty">You have not submitted any songs yet.</p>';
+
+      notice.textContent = 'Your submitted songs and their current status.';
+
+      return;
+    }
+
+
+    if (which === 'admin') {
+
+      const data = await api('/admin-songs');
+      const songs = data.songs || [];
+
+      window.classicHouseIsAdmin = true;
+
+      document.getElementById('dashTitle').textContent =
+        'CLASSIC HOUSE · ADMIN DASHBOARD';
+
+      notice.textContent =
+        'Admin access confirmed. Verify actual Airtel Money payments before approving songs.';
+
+      content.innerHTML = songs.length
+        ? `
+          <div class="tablewrap">
+            <table>
+              <tr>
+                <th>Song / Artist</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+
+              ${songs.map(song => `
+                <tr>
+                  <td>
+                    ${escapeHtml(song.title)}
+                    <br>
+                    <small>${escapeHtml(song.artist)}</small>
+                  </td>
+
+                  <td>${escapeHtml(song.payment_status)}</td>
+
+                  <td>${escapeHtml(song.status)}</td>
+
+                  <td>
+                    ${
+                      song.payment_status === 'awaiting_verification'
+                      ? `<button class="btn small" onclick="confirmArtistPayment('${song.id}')">
+                          Confirm K50
+                        </button>`
+                      : song.status === 'pending_review'
+                      ? `
+                        <button class="btn small" onclick="reviewSong('${song.id}','published')">
+                          Approve
+                        </button>
+
+                        <button class="btn secondary small" onclick="reviewSong('${song.id}','rejected')">
+                          Reject
+                        </button>
+                      `
+                      : '—'
+                    }
+                  </td>
+                </tr>
+              `).join('')}
+
+            </table>
+          </div>
+        `
+        : '<p class="empty">No artist submissions found.</p>';
+
+      content.innerHTML += `
+        <p class="muted">
+          Only confirm payments after checking your Airtel Money account.
+        </p>
+      `;
+    }
+
+  } catch (error) {
+
+    content.innerHTML =
+      '<p class="empty">Could not load dashboard: ' +
+      escapeHtml(error.message) + '</p>';
+
+    if (which === 'admin') {
+      notice.textContent =
+        'Administrator access failed: ' + error.message;
+    }
+  }
+}
+
+window.showDashboard = showDashboard;
+window.dashTab = dashTab;
+
 async function dashTab(which,el){if(which!=='admin')return;try{const d=await api('/admin-songs');document.getElementById('dashContent').innerHTML=`<div class="tablewrap"><table><tr><th>Song / Artist</th><th>Payment</th><th>Song status</th><th>Admin action</th></tr>${(d.songs||[]).map(s=>`<tr><td>${escapeHtml(s.title)}<br><small class="muted">${escapeHtml(s.artist)}</small></td><td>${escapeHtml(s.payment_status)}<br><small class="muted">${escapeHtml(s.payments?.[0]?.method||'')} ${s.payments?.[0]?.provider_reference?'<br>Ref: '+escapeHtml(s.payments[0].provider_reference):''}</small></td><td>${escapeHtml(s.status)}</td><td>${s.payment_status==='awaiting_verification'?`<button class="btn small" onclick="confirmArtistPayment('${s.id}')">Confirm K50 received</button>`:s.status==='pending_review'?`<button class="btn small" onclick="reviewSong('${s.id}','published')">Approve</button> <button class="btn secondary small" onclick="reviewSong('${s.id}','rejected')">Reject</button>`:'—'}</td></tr>`).join('')}</table></div><p class="muted" style="font-size:12px">Only confirm a payment after checking your Airtel Money account and matching the artist's WhatsApp screenshot/transaction details.</p>`;}catch(e){document.getElementById('dashContent').innerHTML='<p class="muted">'+escapeHtml(e.message)+'</p>';}}
 async function confirmArtistPayment(id){if(!confirm('Have you checked your Airtel Money account and confirmed the K50 was received?'))return;try{const d=await api('/admin-songs',{method:'PATCH',body:{song_id:id,action:'confirm_payment'}});alert(d.message);await dashTab('admin');}catch(e){alert(e.message);}}
 async function reviewSong(id,status){try{await api('/admin-songs',{method:'PATCH',body:{song_id:id,status}});await dashTab('admin');await loadSongs();}catch(e){alert(e.message);}}
