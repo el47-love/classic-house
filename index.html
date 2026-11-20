@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080d1c">
+<title>Classic House.com — African Music</title>
+<style>
+:root{--bg:#080d1c;--panel:#111a2d;--panel2:#17233a;--line:#263653;--text:#f4f7ff;--muted:#9baac4;--blue:#4f8cff;--cyan:#35d4cf;--gold:#f6c76b;--green:#4ed39a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% -10%,#1a3260 0,transparent 32%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.wrap{max-width:1180px;margin:auto;padding:0 22px}.top{position:sticky;top:0;z-index:10;background:#080d1ceF;backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.nav{height:72px;display:flex;align-items:center;gap:22px}.logo{font-weight:900;font-size:20px;letter-spacing:-.8px;white-space:nowrap}.logo span{color:var(--cyan)}.links{display:flex;gap:18px;margin-left:auto}.links button,.nav-actions button{background:none;color:var(--muted);font-weight:650}.links button:hover,.links button.active{color:white}.nav-actions{display:flex;gap:10px}.btn{background:linear-gradient(135deg,var(--blue),#6657e8);color:white;padding:11px 16px;border-radius:11px;font-weight:750;box-shadow:0 8px 24px #315bc444}.btn.secondary{background:var(--panel2);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none}.btn.small{padding:8px 11px;font-size:13px}.hero{padding:62px 0 36px;display:grid;grid-template-columns:1.15fr .85fr;gap:35px;align-items:center}.eyebrow{color:var(--cyan);font-weight:800;text-transform:uppercase;letter-spacing:2px;font-size:11px}.hero h1{font-size:clamp(38px,6vw,68px);line-height:1.02;letter-spacing:-2.5px;margin:13px 0}.hero h1 span{color:var(--cyan)}.hero p{color:var(--muted);font-size:17px;max-width:560px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}.hero-art{min-height:310px;border:1px solid #37517b;border-radius:26px;background:linear-gradient(145deg,#1b3767,#111a2d 58%,#153d4c);padding:25px;position:relative;overflow:hidden;display:flex;align-items:end}.hero-art:before,.hero-art:after{content:"";position:absolute;border-radius:50%;border:1px solid #8bb9ff55;width:260px;height:260px;right:8%;top:-20%;box-shadow:0 0 0 22px #8bb9ff0b,0 0 0 48px #8bb9ff08}.hero-art:after{width:170px;height:170px;right:20%;top:4%}.disc{position:absolute;width:180px;height:180px;border-radius:50%;right:16%;top:16%;background:repeating-radial-gradient(circle,#101827 0 3px,#243653 4px 6px);box-shadow:0 18px 45px #0008}.disc:after{content:"CH";position:absolute;inset:39%;border-radius:50%;background:var(--cyan);color:#06111b;display:grid;place-items:center;font-weight:950}.hero-note{position:relative;z-index:1}.hero-note b{font-size:23px}.hero-note small{display:block;color:#c5d5ee}.section{padding:28px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:17px;gap:15px}.section h2{font-size:24px;margin:0;letter-spacing:-.7px}.sub{color:var(--muted);margin:4px 0 0}.searchrow{display:flex;gap:10px;margin:16px 0 24px}.field{width:100%;background:#0d1628;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:12px 14px;outline:none}.field:focus{border-color:var(--blue)}.chips{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.chip{padding:8px 13px;border:1px solid var(--line);border-radius:99px;color:var(--muted);background:#101a2c}.chip.active{background:#1e4271;border-color:#4f8cff;color:white}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.song{background:linear-gradient(180deg,#17243a,#10192a);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}.cover{aspect-ratio:1.2;border-radius:11px;background:linear-gradient(135deg,#236e83,#26356c);display:grid;place-items:center;font-size:36px;font-weight:900;color:#dffaff;position:relative;overflow:hidden}.cover:after{content:"";position:absolute;width:140px;height:140px;border:1px solid #ffffff44;border-radius:50%;box-shadow:0 0 0 18px #ffffff0c,0 0 0 38px #ffffff0a}.song h3{margin:11px 0 1px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.song p{margin:0;color:var(--muted);font-size:13px}.song-actions{display:flex;gap:7px;margin-top:12px}.song-actions button{flex:1}.empty{padding:28px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center}.banner{background:linear-gradient(110deg,#173b67,#152b42 55%,#163c45);border:1px solid #34577c;border-radius:18px;padding:23px;display:flex;justify-content:space-between;gap:20px;align-items:center}.banner h2{margin:0 0 4px}.banner p{margin:0;color:#c2d1e7}.footer{margin-top:55px;border-top:1px solid var(--line);padding:30px 0;color:var(--muted)}.footerrow{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.player{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#101a2bf2;border-top:1px solid #385071;backdrop-filter:blur(16px);padding:10px 20px;display:none}.playerinner{max-width:1180px;margin:auto;display:flex;align-items:center;gap:14px}.player .track{min-width:0;flex:1}.player b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.player small{color:var(--muted)}.player input{max-width:260px}.modal{position:fixed;inset:0;background:#020611c9;z-index:40;display:none;align-items:center;justify-content:center;padding:18px}.modal.open{display:flex}.modalbox{width:min(650px,100%);max-height:90vh;overflow:auto;background:#111b2e;border:1px solid #344967;border-radius:20px;padding:23px;box-shadow:0 25px 90px #0009}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modalhead h2{margin:0}.close{background:#24334d;color:white;border-radius:9px;padding:7px 11px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgroup{margin-bottom:12px}.formgroup label{display:block;color:#b8c6dc;font-size:13px;margin-bottom:6px}.full{grid-column:1/-1}.notice{padding:12px;border-radius:11px;background:#172a43;color:#c5d7f0;border:1px solid #2c496d;font-size:13px;margin:12px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{background:#1a2941;color:#c4d2e8;border:1px solid var(--line);padding:9px 12px;border-radius:9px}.tab.active{background:#254b7b;color:white}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#0c1526;border:1px solid var(--line);padding:14px;border-radius:12px}.stat strong{display:block;font-size:23px}.stat small{color:var(--muted)}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}td,th{text-align:left;padding:11px;border-bottom:1px solid var(--line)}th{color:var(--muted)}.status{padding:4px 8px;border-radius:99px;background:#42371d;color:#ffd77e;font-size:11px}.status.Published{background:#153d32;color:#73e7b3}.status.Rejected{background:#4a2228;color:#ff9aa5}.muted{color:var(--muted)}.hide{display:none!important}
+@media(max-width:850px){.links{display:none}.hero{grid-template-columns:1fr;padding-top:42px}.hero-art{min-height:230px}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.wrap{padding:0 15px}.nav{height:64px}.nav-actions .secondary{display:none}.hero h1{font-size:43px}.grid{gap:10px}.song{padding:9px}.section h2{font-size:21px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.statgrid{grid-template-columns:1fr 1fr}.banner{display:block}.banner .btn{margin-top:14px}.playerinner{gap:8px}.player input{width:85px}.logo{font-size:18px}}
+
+/* CLASSIC HOUSE - EXPANDED ADMIN AND ARTIST DASHBOARDS */
+#dashboardModal {
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+#dashboardModal .modalbox {
+  width: min(1180px, 96vw);
+  max-width: 1180px;
+  height: min(900px, 94dvh);
+  max-height: 94dvh;
+  min-height: min(680px, 85dvh);
+  padding: 30px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#dashboardModal .modalhead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #111b2e;
+  padding: 4px 0 14px;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+#dashboardModal .modalhead h2 {
+  font-size: clamp(22px, 3vw, 32px);
+}
+#dashboardModal .statgrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+#dashboardModal .stat {
+  padding: 20px;
+  min-height: 112px;
+  border-radius: 16px;
+}
+#dashboardModal .stat strong {
+  font-size: 30px;
+}
+#dashboardModal .tabs {
+  gap: 12px;
+  margin: 8px 0;
+}
+#dashboardModal .tab {
+  padding: 12px 18px;
+  font-size: 15px;
+}
+#dashboardModal #dashContent {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 10px;
+}
+#dashboardModal #dashContent .tablewrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+#dashboardModal #dashContent table {
+  width: 100%;
+  min-width: 720px;
+  font-size: 15px;
+}
+#dashboardModal #dashContent td,
+#dashboardModal #dashContent th {
+  padding: 15px;
+  vertical-align: middle;
+}
+#dashboardModal #dashboardNotice {
+  font-size: 14px;
+  padding: 15px 18px;
+  margin: 0;
+}
+/* FULL-SCREEN PHONE DASHBOARDS */
+@media (max-width: 700px) {
+  #dashboardModal {
+    padding: 0;
+    align-items: stretch;
+  }
+  #dashboardModal .modalbox {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    padding: 18px 16px 25px;
+    gap: 10px;
+  }
+  #dashboardModal .modalhead {
+    padding: 8px 0 14px;
+  }
+  #dashboardModal .modalhead h2 {
+    font-size: 23px;
+  }
+  #dashboardModal .statgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  #dashboardModal .stat {
+    padding: 15px;
+    min-height: 96px;
+  }
+  #dashboardModal .stat strong {
+    font-size: 25px;
+  }
+  #dashboardModal .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  #dashboardModal .tab {
+    padding: 13px 8px;
+    font-size: 14px;
+  }
+  #dashboardModal #dashContent {
+    overflow: auto;
+  }
+  #dashboardModal #dashContent .tablewrap {
+    overflow: visible;
+    border: 0;
+  }
+  #dashboardModal #dashContent table {
+    min-width: 0;
+    width: 100%;
+    font-size: 14px;
+  }
+  #dashboardModal #dashContent tr:first-child {
+    display: none;
+  }
+  #dashboardModal #dashContent tr:not(:first-child) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 12px;
+    background: #0d1729;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+  }
+  #dashboardModal #dashContent td {
+    display: block;
+    min-width: 0;
+    padding: 10px 2px;
+    overflow-wrap: anywhere;
+    border-bottom: 1px solid #263653;
+  }
+  #dashboardModal #dashContent td:last-child {
+    grid-column: 1 / -1;
+    border-bottom: 0;
+  }
+  #dashboardModal #dashContent .btn {
+    margin: 3px 4px 3px 0;
+    padding: 10px 12px;
+  }
+  #dashboardModal #dashboardNotice {
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap nav">
+<div class="logo">CLASSIC <span>HOUSE</span><small style="font-size:10px;color:#a8b8d1">.COM</small></div>
+<nav class="links"><button class="active" data-page="home">Home</button><button data-page="explore">Explore Music</button><button data-page="trending">Trending</button><button data-page="artists">Artists</button></nav>
+<div class="nav-actions"><button class="secondary" onclick="openModal('loginModal')">Artist Login</button><button class="btn small" onclick="openModal('uploadModal')">＋ Upload Music</button></div>
+</div></header>
+<main class="wrap">
+<section class="hero" id="hero"><div><div class="eyebrow">THE SOUND OF AFRICA</div><h1>Your Music.<br><span>Your Platform.</span><br>Your Audience.</h1><p>Discover fresh African sounds, support independent artists and download the music you love. Built in Zambia, made for the world.</p><div class="hero-actions"><button class="btn" onclick="go('explore')">Explore music →</button><button class="btn secondary" onclick="openModal('uploadModal')">I'm an artist · Upload a song</button></div></div><div class="hero-art"><div class="disc"></div><div class="hero-note"><b>CLASSIC HOUSE.COM</b><small>Discover • Stream • Download</small></div></div></section>
+<section class="section" id="musicSection"><div class="section-head"><div><div class="eyebrow">FIND YOUR NEXT FAVOURITE</div><h2 id="sectionTitle">Fresh on Classic House</h2><p class="sub">New sounds from independent artists.</p></div></div>
+<div class="searchrow"><input class="field" id="search" placeholder="Search songs, artists or genres..." oninput="renderSongs()"><button class="btn secondary" onclick="document.getElementById('search').value='';renderSongs()">Clear</button></div>
+<div class="chips" id="chips"></div><div class="grid" id="songGrid"></div><div id="empty" class="empty hide">No songs found. Try another search or check back for new releases.</div></section>
+<section class="section"><div class="banner"><div><div class="eyebrow">FOR THE NEXT GENERATION</div><h2>Are you ready to be heard?</h2><p>Upload your track, submit it for review and share it with music lovers.</p></div><button class="btn" onclick="openModal('uploadModal')">Publish your music</button></div></section>
+<section class="section"><div class="section-head"><div><div class="eyebrow">HOW IT WORKS</div><h2>Get your music out there</h2></div></div><div class="grid" style="grid-template-columns:repeat(3,1fr)"><div class="song"><div class="eyebrow">01 · SUBMIT</div><h3>Upload your song</h3><p>Add your MP3, artwork and song details in the artist portal.</p></div><div class="song"><div class="eyebrow">02 · PAY</div><h3>K50 publishing fee</h3><p>Complete the publishing fee payment for each song submission.</p></div><div class="song"><div class="eyebrow">03 · GET PUBLISHED</div><h3>Review and approval</h3><p>Our team reviews rights and quality. Approved tracks go live.</p></div></div></section>
+<section class="section" id="artistArea"><div class="section-head"><div><div class="eyebrow">ARTIST CENTRE</div><h2>Manage your music</h2><p class="sub">Sign in to view your submissions and upload history.</p></div><button class="btn secondary" onclick="openModal('loginModal')">Open artist dashboard</button></div></section>
+</main>
+<footer class="footer"><div class="wrap footerrow"><div><div class="logo">CLASSIC <span>HOUSE</span><small style="font-size:10px;color:#a8b8d1">.COM</small></div><p>Discover • Stream • Download</p></div><div>© 2026 Classic House.com · Zambia<br><small>Music belongs to its rightful creators.</small></div></div></footer>
+<div class="player" id="player"><div class="playerinner"><button class="btn small" onclick="togglePlay()">Ⅱ / ▶</button><div class="track"><b id="playingTitle">Now playing</b><small id="playingArtist"></small></div><audio id="audio" controls style="width:min(340px,45vw)"></audio></div></div>
+<div class="modal" id="uploadModal"><div class="modalbox"><div class="modalhead"><h2>Submit your music</h2><button class="close" onclick="closeModal('uploadModal')">✕</button></div><div class="notice">Standard publishing fee: <b style="color:#fff">K50 per song</b>. Pay manually using Airtel Money, then send your payment screenshot to our WhatsApp number. Your song will remain unpublished until we verify payment and approve it.</div>
+<form id="uploadForm"><div class="formgrid">
+<div class="formgroup"><label>Artist / stage name *</label><input class="field" name="artist" required placeholder="Your artist name"></div>
+<div class="formgroup"><label>Song title *</label><input class="field" name="title" required placeholder="Song title"></div>
+<div class="formgroup"><label>Genre *</label><select class="field" name="genre" required><option value="">Choose genre</option><option>Zambian Music</option><option>Afrobeat</option><option>Hip-hop</option><option>Dancehall</option><option>Gospel</option><option>R&B</option><option>Amapiano</option><option>Afro-pop</option><option>Reggae</option><option>Traditional Music</option><option>International</option></select></div>
+<div class="formgroup"><label>Producer (optional)</label><input class="field" name="producer" placeholder="Producer name"></div>
+<div class="formgroup full"><label>Song description (optional)</label><textarea class="field" name="description" rows="2" placeholder="Tell listeners about this song"></textarea></div>
+<div class="formgroup"><label>MP3 audio file *</label><input class="field" name="audio" type="file" accept="audio/mpeg,audio/mp3,audio/*" required></div>
+<div class="formgroup"><label>Cover artwork *</label><input class="field" name="cover" type="file" accept="image/*" required></div>
+<div class="formgroup full"><label><input type="checkbox" name="rights" required> I confirm that I own or have permission to distribute this recording, composition, artwork and any samples or performances included.</label></div>
+<div class="formgroup full"><label><input type="checkbox" name="terms" required> I agree that payment does not guarantee approval. Classic House.com may reject or remove content that infringes rights or violates its rules.</label></div>
+</div><button class="btn" type="submit" style="width:100%">Continue to K50 payment instructions</button></form></div></div>
+<div class="modal" id="loginModal"><div class="modalbox"><div class="modalhead"><h2>Artist portal</h2><button class="close" onclick="closeModal('loginModal')">✕</button></div><div class="notice">Create an artist account or sign in with your email and password. Use a valid email address.</div><form id="loginForm"><div class="formgroup"><label>Artist / stage name (for new accounts)</label><input class="field" id="loginName" placeholder="Your artist name"></div><div class="formgroup"><label>Email</label><input class="field" id="loginContact" type="email" required placeholder="you@example.com"></div><div class="formgroup"><label>Password</label><input class="field" id="loginPassword" type="password" minlength="8" required placeholder="At least 8 characters"></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">Sign in</button><button class="btn secondary" type="button" onclick="registerArtist()">Create account</button></div></form></div></div>
+<div class="modal" id="checkoutModal"><div class="modalbox"><div class="modalhead"><h2>Airtel Money payment</h2><button class="close" onclick="closeModal('checkoutModal')">✕</button></div><div class="statgrid"><div class="stat"><small>Publishing fee</small><strong>K50</strong></div><div class="stat"><small>Submission</small><strong id="checkoutSong" style="font-size:15px">Song</strong></div></div><div class="notice"><b>Pay K50 to Airtel Money:</b><br><div style="font-size:25px;font-weight:900;color:#fff;margin:7px 0">0779 885 869</div>After paying, send a screenshot of the successful transaction to this same number on WhatsApp. Include your artist name and song title in the message. Do not send your PIN or password.</div><button class="btn" style="width:100%;margin-bottom:10px" onclick="openPaymentWhatsApp()">Open WhatsApp chat to send your screenshot</button><div class="formgroup"><label>Transaction ID (optional)</label><input class="field" id="paymentReference" placeholder="Enter Airtel transaction ID if available"></div><button class="btn secondary" style="width:100%" onclick="reportManualPayment()">I've paid and sent my WhatsApp screenshot</button><p class="muted" style="font-size:12px;margin-top:10px">This only tells us that you have made a payment. It does not confirm payment. Your song stays unpublished until an administrator verifies the money received and approves the song.</p></div></div>
+<div class="modal" id="dashboardModal"><div class="modalbox"><div class="modalhead"><h2 id="dashTitle">Artist dashboard</h2><button class="close" onclick="closeModal('dashboardModal')">✕</button></div><div class="statgrid" id="dashStats"></div><div class="tabs"><button class="tab active" onclick="dashTab('submissions',this)">My submissions</button><button class="tab" onclick="dashTab('admin',this)">Admin preview</button></div><div id="dashContent"></div><div class="notice" id="dashboardNotice">Your account data is loaded securely from Classic House.com.</div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://pmsvhzbpxktnsexwubab.supabase.co"; // Replace with your Supabase Project URL
+const SUPABASE_ANON_KEY = "sb_publishable_eP1e5_PLFukpq3Njs0ZKgA_6sKmUtMd"; // Replace with your Supabase anon/public key
+const supabaseReady = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR_");
+const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let session=null;
+const API = "/api";
+async function api(path, options={}) { if(!session) { const {data}=await sb.auth.getSession(); session=data.session; } const headers={...(options.headers||{})}; if(session?.access_token) headers.Authorization=`Bearer ${session.access_token}`; if(options.body && !(options.body instanceof FormData)) headers["Content-Type"]="application/json"; const r=await fetch(API+path,{...options,headers,body:options.body && !(options.body instanceof FormData)?JSON.stringify(options.body):options.body}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Request failed"); return d; }
+const genres=['All','Zambian Music','Afrobeat','Hip-hop','Dancehall','Gospel','R&B','Amapiano','Afro-pop','Reggae','Traditional Music','International'];
+let songs=[];
+let selectedGenre='All',pendingSong=null,currentArtist='';
+function save(){}
+async function loadSongs(){ if(!supabaseReady){ document.getElementById('songGrid').innerHTML='<div class="empty">Connect your Supabase project to load published music.</div>'; return; } try { const d=await api('/songs'); songs=d.songs||[]; renderSongs(); } catch(e){ document.getElementById('songGrid').innerHTML='<div class="empty">Could not load music: '+escapeHtml(e.message)+'</div>'; } }
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function makeChips(){document.getElementById('chips').innerHTML=genres.map(g=>`<button class="chip ${g===selectedGenre?'active':''}" onclick="selectedGenre='${g}';makeChips();renderSongs()">${g}</button>`).join('')}
+function renderSongs(){let q=document.getElementById('search').value.toLowerCase();let list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));document.getElementById('songGrid').innerHTML=list.map(s=>`<article class="song"><div class="cover" style="${s.cover_url?'background-image:url('+s.cover_url+');background-size:cover;background-position:center':''}">${s.cover_url?'':escapeHtml(s.title.slice(0,2).toUpperCase())}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.artist)} · ${escapeHtml(s.genre)}</p><div class="song-actions"><button class="btn small" onclick="playSong('${s.id}')">▶ Play</button><button class="btn secondary small" onclick="downloadSong('${s.id}')">↓ Download</button></div><p style="margin-top:8px;font-size:11px">↓ ${s.downloads||0} downloads · ♫ ${s.streams||0} plays</p></article>`).join('');document.getElementById('empty').classList.toggle('hide',list.length>0);document.getElementById('sectionTitle').textContent=selectedGenre==='All'?'Fresh on Classic House':selectedGenre}
+function go(page){document.querySelectorAll('.links button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='trending'){selectedGenre='All';document.getElementById('search').value='';songs.sort((a,b)=>(b.downloads||0)-(a.downloads||0))}if(page==='artists'){document.getElementById('sectionTitle').textContent='Artists on Classic House';document.getElementById('search').placeholder='Search artist names...'}else document.getElementById('search').placeholder='Search songs, artists or genres...';makeChips();renderSongs();document.getElementById('musicSection').scrollIntoView({behavior:'smooth'})}
+document.querySelectorAll('.links button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function openModal(id){document.getElementById(id).classList.add('open')}function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+document.getElementById('uploadForm').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseReady){alert('The site owner must configure Supabase before artist uploads can work.');return;}try{const {data}=await sb.auth.getSession();session=data.session;if(!session){closeModal('uploadModal');openModal('loginModal');alert('Please create an artist account or sign in first.');return;}const f=e.target,audio=f.audio.files[0],cover=f.cover.files[0];if(!audio||!cover)throw new Error('Choose both an MP3 and cover image.');if(audio.size>50*1024*1024)throw new Error('MP3 must be 50 MB or smaller.');if(cover.size>8*1024*1024)throw new Error('Cover image must be 8 MB or smaller.');if(!audio.type.startsWith('audio/'))throw new Error('The audio file type is not supported.');if(!cover.type.startsWith('image/'))throw new Error('The cover must be an image.');const uid=session.user.id,base=uid+'/'+Date.now(),audioPath=base+'-'+audio.name.replace(/[^a-zA-Z0-9._-]/g,'_'),coverPath=base+'-cover-'+cover.name.replace(/[^a-zA-Z0-9._-]/g,'_');const up1=await sb.storage.from('music').upload(audioPath,audio,{contentType:audio.type,upsert:false});if(up1.error)throw up1.error;const up2=await sb.storage.from('music').upload(coverPath,cover,{contentType:cover.type,upsert:false});if(up2.error)throw up2.error;const d=await api('/songs',{method:'POST',body:{title:f.title.value.trim(),artist:f.artist.value.trim(),genre:f.genre.value,producer:f.producer.value.trim(),description:f.description.value.trim(),audio_path:audioPath,cover_path:coverPath,rights_confirmed:f.rights.checked}});pendingSong=d.song;currentArtist=f.artist.value.trim();closeModal('uploadModal');document.getElementById('checkoutSong').textContent=pendingSong.title;openModal('checkoutModal');}catch(err){alert('Upload could not be completed: '+err.message);}});
+async function registerArtist(){if(!supabaseReady){alert('The site owner must configure Supabase first.');return;}const email=document.getElementById('loginContact').value.trim(),password=document.getElementById('loginPassword').value,name=document.getElementById('loginName').value.trim();if(!name||!email||password.length<8){alert('Enter artist name, email and a password of at least 8 characters.');return;}try{const {data,error}=await sb.auth.signUp({email,password,options:{data:{artist_name:name}}});if(error)throw error;if(data.session)session=data.session;alert('Account created. If email confirmation is enabled, check your inbox, confirm your email, then sign in.');if(data.session){currentArtist=name;closeModal('loginModal');showDashboard();}}catch(e){alert(e.message);}}
+document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseReady){alert('The site owner must configure Supabase first.');return;}try{const {data,error}=await sb.auth.signInWithPassword({email:document.getElementById('loginContact').value.trim(),password:document.getElementById('loginPassword').value});if(error)throw error;session=data.session;currentArtist=document.getElementById('loginName').value.trim()||data.user.user_metadata.artist_name||data.user.email;closeModal('loginModal');showDashboard();}catch(err){alert(err.message);}});
+function openPaymentWhatsApp(){if(!pendingSong)return;const message=`Hello Classic House.com, I have paid the K50 publishing fee for my song. Artist: ${currentArtist}. Song: ${pendingSong.title}. I am sending my Airtel Money payment screenshot for verification.`;window.open('https://wa.me/260779885869?text='+encodeURIComponent(message),'_blank','noopener');}
+async function reportManualPayment(){if(!pendingSong)return;try{const reference=document.getElementById('paymentReference').value.trim();const d=await api('/payments-manual',{method:'POST',body:{song_id:pendingSong.id,transaction_reference:reference||null}});closeModal('checkoutModal');document.getElementById('uploadForm').reset();document.getElementById('paymentReference').value='';alert(d.message);pendingSong=null;showDashboard();}catch(e){alert(e.message);}}
+async function showDashboard(){try{const d=await api('/my-songs');const mine=d.songs||[];document.getElementById('dashTitle').textContent=(currentArtist||'Artist')+' · Artist dashboard';document.getElementById('dashStats').innerHTML=`<div class="stat"><small>Submissions</small><strong>${mine.length}</strong></div><div class="stat"><small>Published</small><strong>${mine.filter(s=>s.status==='published').length}</strong></div><div class="stat"><small>Pending</small><strong>${mine.filter(s=>s.status!=='published').length}</strong></div>`;document.getElementById('dashContent').innerHTML=mine.length?`<div class="tablewrap"><table><tr><th>Song</th><th>Status</th><th>Payment</th></tr>${mine.map(s=>`<tr><td>${escapeHtml(s.title)}</td><td><span class="status">${escapeHtml(s.status)}</span></td><td>${escapeHtml(s.payment_status)}</td></tr>`).join('')}</table></div>`:'<p class="muted">No submissions yet. Upload your first song to get started.</p>';document.getElementById('dashboardNotice').textContent='Your artist account is signed in. Admin review tools are available only to authorised admin accounts.';openModal('dashboardModal');}catch(e){alert('Could not load dashboard: '+e.message);}}
+async function dashTab(which,el){if(which!=='admin')return;try{const d=await api('/admin-songs');document.getElementById('dashContent').innerHTML=`<div class="tablewrap"><table><tr><th>Song / Artist</th><th>Payment</th><th>Song status</th><th>Admin action</th></tr>${(d.songs||[]).map(s=>`<tr><td>${escapeHtml(s.title)}<br><small class="muted">${escapeHtml(s.artist)}</small></td><td>${escapeHtml(s.payment_status)}<br><small class="muted">${escapeHtml(s.payments?.[0]?.method||'')} ${s.payments?.[0]?.provider_reference?'<br>Ref: '+escapeHtml(s.payments[0].provider_reference):''}</small></td><td>${escapeHtml(s.status)}</td><td>${s.payment_status==='awaiting_verification'?`<button class="btn small" onclick="confirmArtistPayment('${s.id}')">Confirm K50 received</button>`:s.status==='pending_review'?`<button class="btn small" onclick="reviewSong('${s.id}','published')">Approve</button> <button class="btn secondary small" onclick="reviewSong('${s.id}','rejected')">Reject</button>`:'—'}</td></tr>`).join('')}</table></div><p class="muted" style="font-size:12px">Only confirm a payment after checking your Airtel Money account and matching the artist's WhatsApp screenshot/transaction details.</p>`;}catch(e){document.getElementById('dashContent').innerHTML='<p class="muted">'+escapeHtml(e.message)+'</p>';}}
+async function confirmArtistPayment(id){if(!confirm('Have you checked your Airtel Money account and confirmed the K50 was received?'))return;try{const d=await api('/admin-songs',{method:'PATCH',body:{song_id:id,action:'confirm_payment'}});alert(d.message);await dashTab('admin');}catch(e){alert(e.message);}}
+async function reviewSong(id,status){try{await api('/admin-songs',{method:'PATCH',body:{song_id:id,status}});await dashTab('admin');await loadSongs();}catch(e){alert(e.message);}}
+function playSong(id){const s=songs.find(x=>x.id===id);if(!s||!s.audio_url){alert('Audio is not available.');return;}const a=document.getElementById('audio');a.src=s.audio_url;a.play();document.getElementById('playingTitle').textContent=s.title;document.getElementById('playingArtist').textContent=s.artist;document.getElementById('player').style.display='block';}
+function togglePlay(){const a=document.getElementById('audio');if(a.paused)a.play();else a.pause();}
+function downloadSong(id){const s=songs.find(x=>x.id===id);if(!s||!s.audio_url){alert('Download is not available.');return;}const a=document.createElement('a');a.href=s.audio_url;a.download=(s.title||'classic-house-track')+'.mp3';a.click();}
+if(sb){sb.auth.onAuthStateChange((_event,newSession)=>{session=newSession;});}
+makeChips();loadSongs();
+
+</script>
+</body></html>
