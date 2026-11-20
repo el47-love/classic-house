@@ -1,0 +1,10 @@
+{
+  "name": "classic-house-com",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "vercel dev", "deploy": "vercel --prod"},
+  "engines": {"node": ">=20"},
+  "dependencies": {"@supabase/supabase-js": "^2.57.0"},
+  "devDependencies": {"vercel": "^48.1.0"}
+}
