@@ -1,4 +1,3 @@
-
 import { adminClient, requireUser, send } from './_lib/supabase.js';
 
 export default async function handler(req, res) {
@@ -42,6 +41,8 @@ export default async function handler(req, res) {
           status,
           payment_status,
           created_at,
+          removed_at,
+          removal_reason,
           payments(
             amount,
             currency,
@@ -61,6 +62,55 @@ export default async function handler(req, res) {
       return send(res, 200, { songs: data || [] });
     }
 
+    if (req.method === 'DELETE') {
+      const { song_id, reason } = req.body || {};
+
+      if (!song_id) {
+        return send(res, 400, { error: 'Song ID is required.' });
+      }
+
+      const { data: existing, error: lookupError } = await db
+        .from('songs')
+        .select('id, title, removed_at')
+        .eq('id', song_id)
+        .maybeSingle();
+
+      if (lookupError || !existing) {
+        return send(res, 404, { error: 'Song not found.' });
+      }
+
+      if (existing.removed_at) {
+        return send(res, 409, {
+          error: 'This song has already been removed.'
+        });
+      }
+
+      const { data, error } = await db
+        .from('songs')
+        .update({
+          removed_at: new Date().toISOString(),
+          removed_by: auth.user.id,
+          removal_reason: String(
+            reason || 'Removed by administrator'
+          ).slice(0, 500)
+        })
+        .eq('id', song_id)
+        .is('removed_at', null)
+        .select('id, title, removed_at')
+        .maybeSingle();
+
+      if (error || !data) {
+        return send(res, 500, {
+          error: error?.message || 'Could not remove this song.'
+        });
+      }
+
+      return send(res, 200, {
+        message: 'Song removed from the public platform. Payment records have been retained.',
+        song: data
+      });
+    }
+
     if (req.method === 'PATCH') {
       const { song_id, status, action } = req.body || {};
 
@@ -71,12 +121,18 @@ export default async function handler(req, res) {
       if (action === 'confirm_payment') {
         const { data: song, error: lookupError } = await db
           .from('songs')
-          .select('id, payment_status')
+          .select('id, payment_status, removed_at')
           .eq('id', song_id)
           .single();
 
         if (lookupError || !song) {
           return send(res, 404, { error: 'Song not found.' });
+        }
+
+        if (song.removed_at) {
+          return send(res, 409, {
+            error: 'This song has been removed and cannot be processed.'
+          });
         }
 
         if (song.payment_status !== 'awaiting_verification') {
@@ -125,13 +181,14 @@ export default async function handler(req, res) {
         .update({ status })
         .eq('id', song_id)
         .eq('payment_status', 'paid')
+        .is('removed_at', null)
         .select('id, status')
         .single();
 
       if (error || !data) {
         return send(res, 400, {
           error: error?.message ||
-            'Only payment-confirmed submissions can be reviewed.'
+            'Only payment-confirmed, active submissions can be reviewed.'
         });
       }
 
@@ -141,8 +198,7 @@ export default async function handler(req, res) {
       });
     }
 
-    res.setHeader('Allow', 'GET, PATCH');
-
+    res.setHeader('Allow', 'GET, PATCH, DELETE');
     return send(res, 405, { error: 'Method not allowed.' });
 
   } catch (error) {

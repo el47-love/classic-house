@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   try {
     const db = adminClient();
     if (req.method === 'GET') {
-      const { data, error } = await db.from('songs').select('id,title,artist,genre,producer,description,cover_path,audio_path,downloads,streams,created_at,status').eq('status','published').eq('payment_status','paid').order('created_at',{ascending:false}).limit(100);
+      const { data, error } = await db.from('songs').select('id,title,artist,genre,producer,description,cover_path,audio_path,downloads,streams,created_at,status').eq('status','published').eq('payment_status','paid').is('removed_at',null).order('created_at',{ascending:false}).limit(100);
       if (error) return send(res, 500, { error: error.message });
       const songs = await Promise.all((data || []).map(async s => {
         const [{ data: audio }, { data: cover }] = await Promise.all([
