@@ -210,6 +210,7 @@
 <div class="modal" id="checkoutModal"><div class="modalbox"><div class="modalhead"><h2>Airtel Money payment</h2><button class="close" onclick="closeModal('checkoutModal')">✕</button></div><div class="statgrid"><div class="stat"><small>Publishing fee</small><strong>K50</strong></div><div class="stat"><small>Submission</small><strong id="checkoutSong" style="font-size:15px">Song</strong></div></div><div class="notice"><b>Pay K50 to Airtel Money:</b><br><div style="font-size:25px;font-weight:900;color:#fff;margin:7px 0">0779 885 869</div>After paying, send a screenshot of the successful transaction to this same number on WhatsApp. Include your artist name and song title in the message. Do not send your PIN or password.</div><button class="btn" style="width:100%;margin-bottom:10px" onclick="openPaymentWhatsApp()">Open WhatsApp chat to send your screenshot</button><div class="formgroup"><label>Transaction ID (optional)</label><input class="field" id="paymentReference" placeholder="Enter Airtel transaction ID if available"></div><button class="btn secondary" style="width:100%" onclick="reportManualPayment()">I've paid and sent my WhatsApp screenshot</button><p class="muted" style="font-size:12px;margin-top:10px">This only tells us that you have made a payment. It does not confirm payment. Your song stays unpublished until an administrator verifies the money received and approves the song.</p></div></div>
 <div class="modal" id="dashboardModal"><div class="modalbox"><div class="modalhead"><h2 id="dashTitle">Artist dashboard</h2><button class="close" onclick="closeModal('dashboardModal')">✕</button></div><div class="statgrid" id="dashStats"></div><div class="tabs"><button class="tab active" onclick="dashTab('submissions',this)">My submissions</button><button class="tab" onclick="dashTab('admin',this)">Admin preview</button></div><div id="dashContent"></div><div class="notice" id="dashboardNotice">Your account data is loaded securely from Classic House.com.</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/ffmpeg.js"></script>
 <script>
 const SUPABASE_URL = "https://pmsvhzbpxktnsexwubab.supabase.co"; // Replace with your Supabase Project URL
 const SUPABASE_ANON_KEY = "sb_publishable_eP1e5_PLFukpq3Njs0ZKgA_6sKmUtMd"; // Replace with your Supabase anon/public key
@@ -230,7 +231,146 @@ function go(page){document.querySelectorAll('.links button').forEach(b=>b.classL
 document.querySelectorAll('.links button').forEach(b=>b.onclick=()=>go(b.dataset.page));
 function openModal(id){document.getElementById(id).classList.add('open')}function closeModal(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
-document.getElementById('uploadForm').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseReady){alert('The site owner must configure Supabase before artist uploads can work.');return;}try{const {data}=await sb.auth.getSession();session=data.session;if(!session){closeModal('uploadModal');openModal('loginModal');alert('Please create an artist account or sign in first.');return;}const f=e.target,audio=f.audio.files[0],cover=f.cover.files[0];if(!audio||!cover)throw new Error('Choose both an MP3 and cover image.');if(audio.size>50*1024*1024)throw new Error('MP3 must be 50 MB or smaller.');if(cover.size>8*1024*1024)throw new Error('Cover image must be 8 MB or smaller.');if(!audio.type.startsWith('audio/'))throw new Error('The audio file type is not supported.');if(!cover.type.startsWith('image/'))throw new Error('The cover must be an image.');const uid=session.user.id,base=uid+'/'+Date.now(),audioPath=base+'-'+audio.name.replace(/[^a-zA-Z0-9._-]/g,'_'),coverPath=base+'-cover-'+cover.name.replace(/[^a-zA-Z0-9._-]/g,'_');const up1=await sb.storage.from('music').upload(audioPath,audio,{contentType:audio.type,upsert:false});if(up1.error)throw up1.error;const up2=await sb.storage.from('music').upload(coverPath,cover,{contentType:cover.type,upsert:false});if(up2.error)throw up2.error;const d=await api('/songs',{method:'POST',body:{title:f.title.value.trim(),artist:f.artist.value.trim(),genre:f.genre.value,producer:f.producer.value.trim(),description:f.description.value.trim(),audio_path:audioPath,cover_path:coverPath,rights_confirmed:f.rights.checked}});pendingSong=d.song;currentArtist=f.artist.value.trim();closeModal('uploadModal');document.getElementById('checkoutSong').textContent=pendingSong.title;openModal('checkoutModal');}catch(err){alert('Upload could not be completed: '+err.message);}});
+document.getElementById('uploadForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!supabaseReady) {
+    alert('The site owner must configure Supabase before artist uploads can work.');
+    return;
+  }
+
+  let ffmpeg = null;
+  const f = e.target;
+  const submitButton = f.querySelector('button[type="submit"]');
+  const submitLabel = submitButton ? submitButton.textContent : '';
+
+  try {
+    const { data } = await sb.auth.getSession();
+    session = data.session;
+
+    if (!session) {
+      closeModal('uploadModal');
+      openModal('loginModal');
+      alert('Please create an artist account or sign in first.');
+      return;
+    }
+
+    const audio = f.audio.files[0];
+    const cover = f.cover.files[0];
+
+    if (!audio || !cover) throw new Error('Choose both an MP3 and cover image.');
+    if (audio.size > 20 * 1024 * 1024) throw new Error('MP3 must be 20 MB or smaller.');
+    if (cover.size > 8 * 1024 * 1024) throw new Error('Cover image must be 8 MB or smaller.');
+    if (!audio.type.startsWith('audio/')) throw new Error('The audio file type is not supported.');
+    if (!cover.type.startsWith('image/')) throw new Error('The cover must be an image.');
+
+    if (typeof FFmpegWASM === 'undefined') {
+      throw new Error('Audio processing library is not available. Please try again later.');
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Processing audio... Please wait';
+    }
+
+    const uid = session.user.id;
+    const stamp = Date.now();
+    const safeAudioName = audio.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'song.mp3';
+    const safeCoverName = cover.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'cover';
+    const originalPath = `${uid}/originals/${stamp}-${safeAudioName}`;
+    const watermarkedPath = `${uid}/watermarked/${stamp}-watermarked.mp3`;
+    const coverPath = `${uid}/covers/${stamp}-cover-${safeCoverName}`;
+
+    ffmpeg = new FFmpegWASM.FFmpeg();
+    ffmpeg.on('log', ({ message }) => console.log(message));
+
+    await ffmpeg.load({
+      coreURL: '/ffmpeg-core.js',
+      wasmURL: '/ffmpeg-core.wasm'
+    });
+
+    const watermarkResponse = await fetch('/classic-house-watermark.mp3');
+    if (!watermarkResponse.ok) throw new Error('Classic House watermark could not be loaded.');
+
+    await ffmpeg.writeFile(
+      'watermark.mp3',
+      new Uint8Array(await watermarkResponse.arrayBuffer())
+    );
+    await ffmpeg.writeFile(
+      'original.mp3',
+      new Uint8Array(await audio.arrayBuffer())
+    );
+
+    if (submitButton) submitButton.textContent = 'Adding Classic House watermark...';
+
+    const exitCode = await ffmpeg.exec([
+      '-i', 'watermark.mp3',
+      '-i', 'original.mp3',
+      '-i', 'watermark.mp3',
+      '-filter_complex',
+      '[0:a][1:a][2:a]concat=n=3:v=0:a=1[out]',
+      '-map', '[out]',
+      '-codec:a', 'libmp3lame',
+      '-b:a', '192k',
+      'classic-house-processed.mp3'
+    ]);
+
+    if (exitCode !== 0) throw new Error('Watermark processing failed. No song was uploaded.');
+
+    const output = await ffmpeg.readFile('classic-house-processed.mp3');
+    const processedBlob = new Blob([output], { type: 'audio/mpeg' });
+
+    if (!processedBlob.size) throw new Error('Processed audio is empty. Upload cancelled.');
+
+    if (submitButton) submitButton.textContent = 'Uploading protected audio...';
+
+    const up1 = await sb.storage.from('music').upload(
+      originalPath, audio, { contentType: audio.type || 'audio/mpeg', upsert: false }
+    );
+    if (up1.error) throw up1.error;
+
+    const up2 = await sb.storage.from('music').upload(
+      watermarkedPath, processedBlob, { contentType: 'audio/mpeg', upsert: false }
+    );
+    if (up2.error) throw up2.error;
+
+    const up3 = await sb.storage.from('music').upload(
+      coverPath, cover, { contentType: cover.type, upsert: false }
+    );
+    if (up3.error) throw up3.error;
+
+    const d = await api('/songs', {
+      method: 'POST',
+      body: {
+        title: f.title.value.trim(),
+        artist: f.artist.value.trim(),
+        genre: f.genre.value,
+        producer: f.producer.value.trim(),
+        description: f.description.value.trim(),
+        audio_path: watermarkedPath,
+        original_audio_path: originalPath,
+        cover_path: coverPath,
+        rights_confirmed: f.rights.checked
+      }
+    });
+
+    pendingSong = d.song;
+    currentArtist = f.artist.value.trim();
+    closeModal('uploadModal');
+    document.getElementById('checkoutSong').textContent = pendingSong.title;
+    openModal('checkoutModal');
+
+  } catch (err) {
+    alert('Upload could not be completed: ' + err.message);
+  } finally {
+    if (ffmpeg) {
+      try { ffmpeg.terminate(); } catch (err) {}
+    }
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = submitLabel;
+    }
+  }
+});
 async function registerArtist(){if(!supabaseReady){alert('The site owner must configure Supabase first.');return;}const email=document.getElementById('loginContact').value.trim(),password=document.getElementById('loginPassword').value,name=document.getElementById('loginName').value.trim();if(!name||!email||password.length<8){alert('Enter artist name, email and a password of at least 8 characters.');return;}try{const {data,error}=await sb.auth.signUp({email,password,options:{data:{artist_name:name}}});if(error)throw error;if(data.session)session=data.session;alert('Account created. If email confirmation is enabled, check your inbox, confirm your email, then sign in.');if(data.session){currentArtist=name;closeModal('loginModal');showDashboard();}}catch(e){alert(e.message);}}
 document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseReady){alert('The site owner must configure Supabase first.');return;}try{const {data,error}=await sb.auth.signInWithPassword({email:document.getElementById('loginContact').value.trim(),password:document.getElementById('loginPassword').value});if(error)throw error;session=data.session;currentArtist=document.getElementById('loginName').value.trim()||data.user.user_metadata.artist_name||data.user.email;closeModal('loginModal');showDashboard();}catch(err){alert(err.message);}});
 function openPaymentWhatsApp(){if(!pendingSong)return;const message=`Hello Classic House.com, I have paid the K50 publishing fee for my song. Artist: ${currentArtist}. Song: ${pendingSong.title}. I am sending my Airtel Money payment screenshot for verification.`;window.open('https://wa.me/260779885869?text='+encodeURIComponent(message),'_blank','noopener');}

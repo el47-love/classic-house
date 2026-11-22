@@ -18,11 +18,23 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const auth = await requireUser(req, db);
       if (auth.error) return send(res, auth.status, { error: auth.error });
-      const { title, artist, genre, producer, description, audio_path, cover_path, rights_confirmed } = req.body || {};
-      if (!title || !artist || !genre || !audio_path || !cover_path || rights_confirmed !== true) return send(res, 400, { error: 'Complete all required fields and confirm distribution rights.' });
+      const { title, artist, genre, producer, description, audio_path, original_audio_path, cover_path, rights_confirmed } = req.body || {};
+      const validPath = (path, folder) =>
+        typeof path === 'string' &&
+        path.startsWith(`${auth.user.id}/${folder}/`) &&
+        path.indexOf('..') === -1 &&
+        path.indexOf('\\') === -1 &&
+        path.indexOf('//') === -1;
+      if (!title || !artist || !genre || rights_confirmed !== true ||
+          !validPath(original_audio_path, 'originals') ||
+          !validPath(audio_path, 'watermarked') ||
+          !validPath(cover_path, 'covers') ||
+          original_audio_path === audio_path) {
+        return send(res, 400, { error: 'Invalid submission details or audio paths.' });
+      }
       const prefix = `${auth.user.id}/`;
       if (!audio_path.startsWith(prefix) || !cover_path.startsWith(prefix)) return send(res, 403, { error: 'Uploads must belong to your account.' });
-      const { data, error } = await db.from('songs').insert({ user_id: auth.user.id, artist_id: auth.user.id, title, artist, artist_name: artist, genre, producer: producer || null, description: description || null, audio_path, cover_path, rights_confirmed: true, status: 'pending_payment', payment_status: 'unpaid' }).select('id,title,status,payment_status').single();
+      const { data, error } = await db.from('songs').insert({ user_id: auth.user.id, artist_id: auth.user.id, title, artist, artist_name: artist, genre, producer: producer || null, description: description || null, audio_path, original_audio_path, cover_path, rights_confirmed: true, status: 'pending_payment', payment_status: 'unpaid' }).select('id,title,status,payment_status').single();
       if (error) return send(res, 500, { error: error.message });
       return send(res, 201, { song: data });
     }
