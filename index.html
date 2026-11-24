@@ -641,9 +641,94 @@ alert(d.message);
 await dashTab('admin');
 }catch(e){alert('Could not remove song: '+e.message);}
 }
-function playSong(id){const s=songs.find(x=>x.id===id);if(!s||!s.audio_url){alert('Audio is not available.');return;}const a=document.getElementById('audio');a.src=s.audio_url;a.play();document.getElementById('playingTitle').textContent=s.title;document.getElementById('playingArtist').textContent=s.artist;document.getElementById('player').style.display='block';}
-function togglePlay(){const a=document.getElementById('audio');if(a.paused)a.play();else a.pause();}
-function downloadSong(id){const s=songs.find(x=>x.id===id);if(!s||!s.audio_url){alert('Download is not available.');return;}const a=document.createElement('a');a.href=s.audio_url;a.download=(s.title||'classic-house-track')+'.mp3';a.click();}
+let activeActivitySongId=null;
+let streamActivitySent=false;
+let classicHouseVisitorId=null;
+
+function getClassicHouseVisitorId(){
+  if(classicHouseVisitorId)return classicHouseVisitorId;
+  try{
+    const saved=localStorage.getItem('ch_visitor_id');
+    if(saved&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(saved)){
+      classicHouseVisitorId=saved;
+      return saved;
+    }
+  }catch(e){}
+  let id;
+  if(window.crypto&&crypto.randomUUID){
+    id=crypto.randomUUID();
+  }else{
+    const bytes=new Uint8Array(16);
+    if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(bytes);
+    else for(let i=0;i<16;i++)bytes[i]=Math.floor(Math.random()*256);
+    bytes[6]=(bytes[6]&15)|64;
+    bytes[8]=(bytes[8]&63)|128;
+    const h=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+    id=h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
+  }
+  classicHouseVisitorId=id;
+  try{localStorage.setItem('ch_visitor_id',id);}catch(e){}
+  return id;
+}
+
+function sendSongActivity(songId,eventType){
+  try{
+    fetch('/api/song-activity',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      keepalive:true,
+      body:JSON.stringify({
+        song_id:songId,
+        event_type:eventType,
+        visitor_id:getClassicHouseVisitorId()
+      })
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+const activityAudio=document.getElementById('audio');
+activityAudio.addEventListener('timeupdate',()=>{
+  if(!activeActivitySongId||streamActivitySent)return;
+  let playedSeconds=0;
+  for(let i=0;i<activityAudio.played.length;i++){
+    playedSeconds+=activityAudio.played.end(i)-activityAudio.played.start(i);
+  }
+  if(playedSeconds>=30){
+    streamActivitySent=true;
+    sendSongActivity(activeActivitySongId,'stream');
+  }
+});
+
+function playSong(id){
+  const s=songs.find(x=>x.id===id);
+  if(!s||!s.audio_url){alert('Audio is not available.');return;}
+  if(activeActivitySongId!==id){
+    activeActivitySongId=id;
+    streamActivitySent=false;
+  }
+  const a=document.getElementById('audio');
+  a.src=s.audio_url;
+  a.play();
+  document.getElementById('playingTitle').textContent=s.title;
+  document.getElementById('playingArtist').textContent=s.artist;
+  document.getElementById('player').style.display='block';
+}
+
+function togglePlay(){
+  const a=document.getElementById('audio');
+  if(a.paused)a.play();else a.pause();
+}
+
+function downloadSong(id){
+  const s=songs.find(x=>x.id===id);
+  if(!s||!s.audio_url){alert('Download is not available.');return;}
+  sendSongActivity(id,'download');
+  const a=document.createElement('a');
+  a.href=s.audio_url;
+  a.download=(s.title||'classic-house-track')+'.mp3';
+  a.click();
+}
 if(sb){sb.auth.onAuthStateChange((_event,newSession)=>{session=newSession;});}
 makeChips();loadSongs();
 
