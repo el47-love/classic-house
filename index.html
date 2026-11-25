@@ -557,7 +557,7 @@ document.getElementById('uploadForm').addEventListener('submit', async e => {
     const cover = f.cover.files[0];
 
     if (!audio || !cover) throw new Error('Choose both an MP3 and cover image.');
-    if (audio.size > 20 * 1024 * 1024) throw new Error('MP3 must be 20 MB or smaller.');
+    if (audio.size > 50 * 1024 * 1024) throw new Error('MP3 must be 50 MB or smaller.');
     if (cover.size > 8 * 1024 * 1024) throw new Error('Cover image must be 8 MB or smaller.');
     if (!audio.type.startsWith('audio/')) throw new Error('The audio file type is not supported.');
     if (!cover.type.startsWith('image/')) throw new Error('The cover must be an image.');
