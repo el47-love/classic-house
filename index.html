@@ -413,6 +413,14 @@ function save(){}
 async function loadSongs(){ if(!supabaseReady){ document.getElementById('songGrid').innerHTML='<div class="empty">Connect your Supabase project to load published music.</div>'; return; } try { const d=await api('/songs'); songs=d.songs||[]; renderSongs(); } catch(e){ document.getElementById('songGrid').innerHTML='<div class="empty">Could not load music: '+escapeHtml(e.message)+'</div>'; } }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makeChips(){document.getElementById('chips').innerHTML=genres.map(g=>`<button class="chip ${g===selectedGenre?'active':''}" onclick="selectedGenre='${g}';makeChips();renderSongs()">${g}</button>`).join('')}
+function songPageUrl(s){
+  const slug=String(s.title||'music').toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-|-$/g,'').slice(0,80)||'music';
+  return '/song/'+encodeURIComponent(s.id)+'/'+slug;
+}
+
 function renderSongs(){
   const q=document.getElementById('search').value.toLowerCase();
   const list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));
@@ -428,11 +436,12 @@ function renderSongs(){
           <h3>${escapeHtml(s.title)}</h3>
           <p>${escapeHtml(s.artist)}</p>
           <small>${escapeHtml(s.genre)} · ${s.streams||0} plays</small>
+          <a href="${songPageUrl(s)}" onclick="event.stopPropagation()" style="color:#35d0c1;font-size:12px">Song page</a>
         </div>
         <button class="explore-download" onclick="event.stopPropagation();downloadSong('${s.id}')" aria-label="Download ${escapeHtml(s.title)}">↓</button>
       </article>`;
     }
-    return `<article class="song"><div class="cover" style="${s.cover_url?'background-image:url('+s.cover_url+');background-size:cover;background-position:center':''}">${s.cover_url?'':escapeHtml(s.title.slice(0,2).toUpperCase())}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.artist)} · ${escapeHtml(s.genre)}</p><div class="song-actions"><button class="btn small" onclick="playSong('${s.id}')">▶ Play</button><button class="btn secondary small" onclick="downloadSong('${s.id}')">↓ Download</button></div><p style="margin-top:8px;font-size:11px">↓ ${s.downloads||0} downloads · ♫ ${s.streams||0} plays</p></article>`;
+    return `<article class="song"><div class="cover" style="${s.cover_url?'background-image:url('+s.cover_url+');background-size:cover;background-position:center':''}">${s.cover_url?'':escapeHtml(s.title.slice(0,2).toUpperCase())}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.artist)} · ${escapeHtml(s.genre)}</p><a href="${songPageUrl(s)}" style="color:#35d0c1;font-size:12px">Song page</a><div class="song-actions"><button class="btn small" onclick="playSong('${s.id}')">▶ Play</button><button class="btn secondary small" onclick="downloadSong('${s.id}')">↓ Download</button></div><p style="margin-top:8px;font-size:11px">↓ ${s.downloads||0} downloads · ♫ ${s.streams||0} plays</p></article>`;
   }).join('');
 
   document.getElementById('empty').classList.toggle('hide',list.length>0);
@@ -486,13 +495,13 @@ function renderArtists(){
     const location=[a.city,a.country].filter(Boolean).join(', ');
     const genres=(a.genres||[]).map(escapeHtml).join(' · ');
 
-    return '<article class="song">'+
+    return '<a href="/artist/'+encodeURIComponent(a.artist_slug)+'" style="display:block;color:inherit;text-decoration:none"><article class="song">'+
       '<div class="cover">'+image+'</div>'+
       '<h3>'+escapeHtml(a.artist_name)+'</h3>'+
       '<p>'+escapeHtml(location||'Independent artist')+'</p>'+
       '<p style="margin-top:6px">'+genres+'</p>'+
       '<p style="margin-top:9px">'+escapeHtml(a.bio||'Discover music from this artist.')+'</p>'+
-      '</article>';
+      '</article></a>';
   }).join('');
 
   document.getElementById('empty').classList.toggle('hide',list.length>0);
