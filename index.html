@@ -230,7 +230,73 @@
  .expanded-content{margin-top:22px}
  .expanded-cover{border-radius:16px}
 }
-\n</style>
+
+/* EXPLORE MUSIC - VERTICAL SONG LIST */
+#songGrid.explore-list{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+#songGrid.explore-list .explore-song{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:10px 13px;
+  min-height:82px;
+  cursor:pointer;
+  background:linear-gradient(100deg,#17243a,#10192a);
+  border-radius:13px;
+}
+#songGrid.explore-list .explore-song .cover{
+  width:60px;
+  height:60px;
+  flex:none;
+  aspect-ratio:1;
+  border-radius:9px;
+  font-size:20px;
+}
+#songGrid.explore-list .explore-song .cover:after{
+  display:none;
+}
+#songGrid.explore-list .explore-song .cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+#songGrid.explore-list .explore-song-info{
+  flex:1;
+  min-width:0;
+}
+#songGrid.explore-list .explore-song-info h3{
+  margin:0 0 3px;
+  font-size:14px;
+}
+#songGrid.explore-list .explore-song-info p{
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+#songGrid.explore-list .explore-song-info small{
+  color:var(--muted);
+  font-size:11px;
+}
+#songGrid.explore-list .explore-download{
+  width:40px;
+  height:40px;
+  flex:none;
+  border-radius:50%;
+  background:#1b2b45;
+  border:1px solid #385071;
+  color:#eaf4ff;
+  font-size:22px;
+}
+#songGrid.explore-list .explore-download:hover{
+  color:var(--cyan);
+  border-color:var(--cyan);
+}
+
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap nav">
@@ -346,7 +412,31 @@ function save(){}
 async function loadSongs(){ if(!supabaseReady){ document.getElementById('songGrid').innerHTML='<div class="empty">Connect your Supabase project to load published music.</div>'; return; } try { const d=await api('/songs'); songs=d.songs||[]; renderSongs(); } catch(e){ document.getElementById('songGrid').innerHTML='<div class="empty">Could not load music: '+escapeHtml(e.message)+'</div>'; } }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makeChips(){document.getElementById('chips').innerHTML=genres.map(g=>`<button class="chip ${g===selectedGenre?'active':''}" onclick="selectedGenre='${g}';makeChips();renderSongs()">${g}</button>`).join('')}
-function renderSongs(){let q=document.getElementById('search').value.toLowerCase();let list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));document.getElementById('songGrid').innerHTML=list.map(s=>`<article class="song"><div class="cover" style="${s.cover_url?'background-image:url('+s.cover_url+');background-size:cover;background-position:center':''}">${s.cover_url?'':escapeHtml(s.title.slice(0,2).toUpperCase())}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.artist)} · ${escapeHtml(s.genre)}</p><div class="song-actions"><button class="btn small" onclick="playSong('${s.id}')">▶ Play</button><button class="btn secondary small" onclick="downloadSong('${s.id}')">↓ Download</button></div><p style="margin-top:8px;font-size:11px">↓ ${s.downloads||0} downloads · ♫ ${s.streams||0} plays</p></article>`).join('');document.getElementById('empty').classList.toggle('hide',list.length>0);document.getElementById('sectionTitle').textContent=selectedGenre==='All'?'Fresh on Classic House':selectedGenre}
+function renderSongs(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));
+  const grid=document.getElementById('songGrid');
+  const explore=currentPage==='explore';
+  grid.classList.toggle('explore-list',explore);
+
+  grid.innerHTML=list.map(s=>{
+    if(explore){
+      return `<article class="song explore-song" onclick="playSong('${s.id}')" role="button" tabindex="0" aria-label="Play ${escapeHtml(s.title)}">
+        <div class="cover">${s.cover_url?`<img src="${escapeHtml(s.cover_url)}" alt="" loading="lazy">`:escapeHtml(s.title.slice(0,2).toUpperCase())}</div>
+        <div class="explore-song-info">
+          <h3>${escapeHtml(s.title)}</h3>
+          <p>${escapeHtml(s.artist)}</p>
+          <small>${escapeHtml(s.genre)} · ${s.streams||0} plays</small>
+        </div>
+        <button class="explore-download" onclick="event.stopPropagation();downloadSong('${s.id}')" aria-label="Download ${escapeHtml(s.title)}">↓</button>
+      </article>`;
+    }
+    return `<article class="song"><div class="cover" style="${s.cover_url?'background-image:url('+s.cover_url+');background-size:cover;background-position:center':''}">${s.cover_url?'':escapeHtml(s.title.slice(0,2).toUpperCase())}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.artist)} · ${escapeHtml(s.genre)}</p><div class="song-actions"><button class="btn small" onclick="playSong('${s.id}')">▶ Play</button><button class="btn secondary small" onclick="downloadSong('${s.id}')">↓ Download</button></div><p style="margin-top:8px;font-size:11px">↓ ${s.downloads||0} downloads · ♫ ${s.streams||0} plays</p></article>`;
+  }).join('');
+
+  document.getElementById('empty').classList.toggle('hide',list.length>0);
+  document.getElementById('sectionTitle').textContent=selectedGenre==='All'?'Fresh on Classic House':selectedGenre;
+}
 
 function handleSearch(){
   if(currentPage==='artists') renderArtists();
@@ -375,6 +465,7 @@ async function loadArtists(){
 }
 
 function renderArtists(){
+  document.getElementById('songGrid').classList.remove('explore-list');
   const q=document.getElementById('search').value.trim().toLowerCase();
   const country=document.getElementById('artistCountry').value;
   const genre=document.getElementById('artistGenre').value;
