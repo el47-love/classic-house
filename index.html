@@ -191,7 +191,46 @@
 .player-timeline{flex:1}
 .player-timeline input{width:clamp(65px,20vw,120px)}
 }
-</style>
+
+/* CLASSIC HOUSE PROFESSIONAL PLAYER */
+.player{padding:10px 18px;background:#0b1425f5;border-top:1px solid #385071}
+.playerinner{max-width:1180px;min-height:62px;gap:16px;flex-wrap:nowrap}
+.mini-track{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.mini-cover{width:48px;height:48px;flex:none;object-fit:cover;border-radius:9px;background:linear-gradient(135deg,#236e83,#26356c)}
+.player .track{min-width:0;flex:1}
+.player .track b{font-size:14px}
+.player .track small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-icon{width:42px;height:42px;flex:none;border-radius:50%;background:#1b2b45;border:1px solid #385071;color:#eaf4ff;font-size:18px;display:grid;place-items:center}
+.player-icon:hover{border-color:var(--cyan);color:var(--cyan)}
+.mini-play{background:#e8f7ff;color:#081322;border:0;font-size:17px}
+.mini-expand{font-size:21px}
+.player-expanded{position:fixed;inset:0;z-index:60;overflow-y:auto;background:radial-gradient(circle at 50% 15%,#1b3d60 0,#101b30 42%,#080e1b 100%);color:var(--text);padding:env(safe-area-inset-top) 22px env(safe-area-inset-bottom);display:flex;flex-direction:column}
+.expanded-top{width:min(760px,100%);margin:12px auto 0;display:flex;align-items:center;justify-content:space-between}
+.expanded-top span{font-size:11px;font-weight:800;letter-spacing:2px;color:#a9c5e6}
+.expanded-content{width:min(440px,100%);margin:28px auto 30px;display:flex;flex-direction:column;flex:1}
+.expanded-cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:20px;background:linear-gradient(135deg,#236e83,#26356c);box-shadow:0 24px 65px #0008}
+.expanded-song{margin:25px 0 18px}
+.expanded-song h2{font-size:25px;line-height:1.2;margin:0 0 7px;overflow-wrap:anywhere}
+.expanded-song p{margin:0;color:#aebed4;font-size:15px}
+.expanded-timeline{display:flex;align-items:center;gap:10px;font-size:12px;color:#b7c7dc}
+.expanded-timeline input{width:100%;min-width:0;accent-color:var(--cyan);cursor:pointer}
+.expanded-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0}
+.expanded-play{width:64px;height:64px;border-radius:50%;background:#e8f7ff;color:#081322;font-size:23px;display:grid;place-items:center}
+.expanded-controls .player-icon{background:transparent;border:0;font-size:21px}
+.expanded-controls .player-icon.active{color:var(--cyan)}
+.player-queue{width:100%;max-width:440px;margin:12px auto 0;max-height:180px;overflow:auto;border-top:1px solid #385071;padding-top:12px}
+#queueItems{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.queue-song{width:100%;text-align:left}
+@media(max-width:520px){
+ .player{padding:8px 12px}
+ .playerinner{min-height:54px;gap:10px}
+ .mini-cover{width:43px;height:43px}
+ .player-icon{width:39px;height:39px}
+ .player-expanded{padding-left:20px;padding-right:20px}
+ .expanded-content{margin-top:22px}
+ .expanded-cover{border-radius:16px}
+}
+\n</style>
 </head>
 <body>
 <header class="top"><div class="wrap nav">
@@ -229,28 +268,48 @@
 </main>
 <footer class="footer"><div class="wrap footerrow"><div><div class="logo">CLASSIC <span>HOUSE</span><small style="font-size:10px;color:#a8b8d1">.COM</small></div><p>Discover • Stream • Download</p></div><div>© 2026 Classic House.com · Zambia<br><small>Music belongs to its rightful creators.</small></div></div></footer>
 <div class="player" id="player">
-<div class="playerinner">
-<div class="track"><b id="playingTitle">Now playing</b><small id="playingArtist"></small></div>
-<div class="player-controls">
-<button class="btn small" id="shuffleBtn" onclick="toggleShuffle()">🔀</button>
-<button class="btn small" onclick="seekPlayer(-10)">-10s</button>
-<button class="btn small" onclick="previousSong()">|◀</button>
-<button class="btn small" id="playerPlayBtn" onclick="togglePlay()">▶</button>
-<button class="btn small" onclick="nextSong()">▶|</button>
-<button class="btn small" onclick="seekPlayer(10)">+10s</button>
-<button class="btn small" id="repeatBtn" onclick="cycleRepeat()">↻</button>
+  <div class="playerinner">
+    <div class="mini-track">
+      <img id="miniCover" class="mini-cover" alt="Album artwork">
+      <div class="track">
+        <b id="playingTitle">Now playing</b>
+        <small id="playingArtist"></small>
+      </div>
+    </div>
+    <button class="player-icon mini-play" id="miniPlayBtn" onclick="togglePlay()" aria-label="Play or pause">▶</button>
+    <button class="player-icon mini-expand" onclick="openExpandedPlayer()" aria-label="Expand player">⛶</button>
+    <audio id="audio" preload="metadata" style="display:none"></audio>
+  </div>
 </div>
-<div class="player-timeline">
-<span id="currentTime">0:00</span>
-<input id="playerProgress" type="range" min="0" max="1000" value="0">
-<span id="durationTime">0:00</span>
-</div>
-<button class="btn small" onclick="toggleQueue()">☷ Queue</button>
-<audio id="audio" preload="metadata" style="display:none"></audio>
-</div>
-<div id="playerQueue" class="player-queue hide">
-<b>Up next</b><div id="queueItems"></div>
-</div>
+
+<div class="player-expanded hide" id="expandedPlayer">
+  <div class="expanded-top">
+    <button class="player-icon" onclick="closeExpandedPlayer()" aria-label="Close player">⌄</button>
+    <span>NOW PLAYING</span>
+    <button class="player-icon" onclick="toggleQueue()" aria-label="Show queue">☷</button>
+  </div>
+  <div class="expanded-content">
+    <img id="expandedCover" class="expanded-cover" alt="Album artwork">
+    <div class="expanded-song">
+      <h2 id="expandedTitle">Now playing</h2>
+      <p id="expandedArtist"></p>
+    </div>
+    <div class="player-timeline expanded-timeline">
+      <span id="currentTime">0:00</span>
+      <input id="playerProgress" type="range" min="0" max="1000" value="0">
+      <span id="durationTime">0:00</span>
+    </div>
+    <div class="expanded-controls">
+      <button class="player-icon" id="shuffleBtn" onclick="toggleShuffle()" aria-label="Shuffle">🔀</button>
+      <button class="player-icon" onclick="previousSong()" aria-label="Previous song">|◀</button>
+      <button class="expanded-play" id="playerPlayBtn" onclick="togglePlay()" aria-label="Play or pause">▶</button>
+      <button class="player-icon" onclick="nextSong()" aria-label="Next song">▶|</button>
+      <button class="player-icon" id="repeatBtn" onclick="cycleRepeat()" aria-label="Repeat">↻</button>
+    </div>
+    <div id="playerQueue" class="player-queue hide">
+      <b>Up next</b><div id="queueItems"></div>
+    </div>
+  </div>
 </div>
 <div class="modal" id="uploadModal"><div class="modalbox"><div class="modalhead"><h2>Submit your music</h2><button class="close" onclick="closeModal('uploadModal')">✕</button></div><div class="notice">Standard publishing fee: <b style="color:#fff">K50 per song</b>. Pay manually using Airtel Money, then send your payment screenshot to our WhatsApp number. Your song will remain unpublished until we verify payment and approve it.</div>
 <form id="uploadForm"><div class="formgrid">
@@ -778,6 +837,13 @@ function playQueueIndex(index){
   a.src=song.audio_url;
   document.getElementById('playingTitle').textContent=song.title||'Untitled';
   document.getElementById('playingArtist').textContent=song.artist||'Unknown artist';
+  document.getElementById('expandedTitle').textContent=song.title||'Untitled';
+  document.getElementById('expandedArtist').textContent=song.artist||'Unknown artist';
+  ['miniCover','expandedCover'].forEach(id=>{
+    const cover=document.getElementById(id);
+    if(song.cover_url) cover.src=song.cover_url;
+    else cover.removeAttribute('src');
+  });
   document.getElementById('player').style.display='block';
   document.getElementById('playerProgress').value=0;
   document.getElementById('currentTime').textContent='0:00';
@@ -853,18 +919,32 @@ function cycleRepeat(){
   button.title='Repeat: '+playerRepeat;
 }
 
+function openExpandedPlayer(){
+  document.getElementById('expandedPlayer').classList.remove('hide');
+}
+
+function closeExpandedPlayer(){
+  document.getElementById('expandedPlayer').classList.add('hide');
+}
+
 function toggleQueue(){
   document.getElementById('playerQueue').classList.toggle('hide');
 }
 
 const playerAudio=document.getElementById('audio');
 
+function syncPlayerPlayButtons(playing){
+  const symbol=playing?'Ⅱ':'▶';
+  document.getElementById('playerPlayBtn').textContent=symbol;
+  document.getElementById('miniPlayBtn').textContent=symbol;
+}
+
 playerAudio.addEventListener('play',()=>{
-  document.getElementById('playerPlayBtn').textContent='Ⅱ';
+  syncPlayerPlayButtons(true);
 });
 
 playerAudio.addEventListener('pause',()=>{
-  document.getElementById('playerPlayBtn').textContent='▶';
+  syncPlayerPlayButtons(false);
 });
 
 playerAudio.addEventListener('timeupdate',()=>{
@@ -879,8 +959,9 @@ playerAudio.addEventListener('timeupdate',()=>{
 });
 
 playerAudio.addEventListener('error',()=>{
-  document.getElementById('playingArtist').textContent=
-    'Unable to play this audio. Please try another track.';
+  const message='Unable to play this audio. Please try another track.';
+  document.getElementById('playingArtist').textContent=message;
+  document.getElementById('expandedArtist').textContent=message;
 });
 
 playerAudio.addEventListener('ended',()=>{
