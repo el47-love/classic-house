@@ -175,6 +175,22 @@
   }
 }
 
+
+.player-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.player-timeline{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.player-timeline input{width:clamp(90px,18vw,220px);accent-color:var(--cyan);cursor:pointer}
+.player-queue{max-width:1180px;margin:10px auto 0;max-height:180px;overflow:auto;border-top:1px solid #385071;padding-top:9px}
+#queueItems{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}
+.queue-song{background:#17243a;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 10px;text-align:left}
+.queue-song small{display:block;color:var(--muted)}
+.queue-song.active,.player button.active{border-color:var(--cyan);color:var(--cyan)}
+@media(max-width:700px){
+.playerinner{flex-wrap:wrap}
+.player .track{flex:1 1 100%}
+.player-controls{flex:1}
+.player-timeline{flex:1}
+.player-timeline input{width:clamp(65px,20vw,120px)}
+}
 </style>
 </head>
 <body>
@@ -212,7 +228,30 @@
 <section class="section" id="artistArea"><div class="section-head"><div><div class="eyebrow">ARTIST CENTRE</div><h2>Manage your music</h2><p class="sub">Sign in to view your submissions and upload history.</p></div><button class="btn secondary" onclick="openModal('loginModal')">Open artist dashboard</button></div></section>
 </main>
 <footer class="footer"><div class="wrap footerrow"><div><div class="logo">CLASSIC <span>HOUSE</span><small style="font-size:10px;color:#a8b8d1">.COM</small></div><p>Discover • Stream • Download</p></div><div>© 2026 Classic House.com · Zambia<br><small>Music belongs to its rightful creators.</small></div></div></footer>
-<div class="player" id="player"><div class="playerinner"><button class="btn small" onclick="togglePlay()">Ⅱ / ▶</button><div class="track"><b id="playingTitle">Now playing</b><small id="playingArtist"></small></div><audio id="audio" controls style="width:min(340px,45vw)"></audio></div></div>
+<div class="player" id="player">
+<div class="playerinner">
+<div class="track"><b id="playingTitle">Now playing</b><small id="playingArtist"></small></div>
+<div class="player-controls">
+<button class="btn small" id="shuffleBtn" onclick="toggleShuffle()">🔀</button>
+<button class="btn small" onclick="seekPlayer(-10)">-10s</button>
+<button class="btn small" onclick="previousSong()">|◀</button>
+<button class="btn small" id="playerPlayBtn" onclick="togglePlay()">▶</button>
+<button class="btn small" onclick="nextSong()">▶|</button>
+<button class="btn small" onclick="seekPlayer(10)">+10s</button>
+<button class="btn small" id="repeatBtn" onclick="cycleRepeat()">↻</button>
+</div>
+<div class="player-timeline">
+<span id="currentTime">0:00</span>
+<input id="playerProgress" type="range" min="0" max="1000" value="0">
+<span id="durationTime">0:00</span>
+</div>
+<button class="btn small" onclick="toggleQueue()">☷ Queue</button>
+<audio id="audio" preload="metadata" style="display:none"></audio>
+</div>
+<div id="playerQueue" class="player-queue hide">
+<b>Up next</b><div id="queueItems"></div>
+</div>
+</div>
 <div class="modal" id="uploadModal"><div class="modalbox"><div class="modalhead"><h2>Submit your music</h2><button class="close" onclick="closeModal('uploadModal')">✕</button></div><div class="notice">Standard publishing fee: <b style="color:#fff">K50 per song</b>. Pay manually using Airtel Money, then send your payment screenshot to our WhatsApp number. Your song will remain unpublished until we verify payment and approve it.</div>
 <form id="uploadForm"><div class="formgrid">
 <div class="formgroup"><label>Artist / stage name *</label><input class="field" name="artist" required placeholder="Your artist name"></div>
@@ -700,25 +739,163 @@ activityAudio.addEventListener('timeupdate',()=>{
   }
 });
 
-function playSong(id){
-  const s=songs.find(x=>x.id===id);
-  if(!s||!s.audio_url){alert('Audio is not available.');return;}
-  if(activeActivitySongId!==id){
-    activeActivitySongId=id;
-    streamActivitySent=false;
-  }
+
+let playerQueue=[];
+let playerQueueIndex=-1;
+let playerShuffle=false;
+let playerRepeat='off';
+
+function playerTime(seconds){
+  if(!Number.isFinite(seconds))return '0:00';
+  return Math.floor(seconds/60)+':'+String(Math.floor(seconds%60)).padStart(2,'0');
+}
+
+function renderPlayerQueue(){
+  const box=document.getElementById('queueItems');
+  box.replaceChildren();
+  playerQueue.forEach((song,index)=>{
+    const button=document.createElement('button');
+    button.className='queue-song'+(index===playerQueueIndex?' active':'');
+    const title=document.createElement('span');
+    const artist=document.createElement('small');
+    title.textContent=song.title||'Untitled';
+    artist.textContent=song.artist||'Unknown artist';
+    button.append(title,artist);
+    button.onclick=()=>playQueueIndex(index);
+    box.appendChild(button);
+  });
+}
+
+function playQueueIndex(index){
+  if(index<0||index>=playerQueue.length)return;
+  const song=playerQueue[index];
+  if(!song||!song.audio_url)return;
+  playerQueueIndex=index;
+  shuffleBag=shuffleBag.filter(item=>item!==index);
+  activeActivitySongId=song.id;
+  streamActivitySent=false;
   const a=document.getElementById('audio');
-  a.src=s.audio_url;
-  a.play();
-  document.getElementById('playingTitle').textContent=s.title;
-  document.getElementById('playingArtist').textContent=s.artist;
+  a.src=song.audio_url;
+  document.getElementById('playingTitle').textContent=song.title||'Untitled';
+  document.getElementById('playingArtist').textContent=song.artist||'Unknown artist';
   document.getElementById('player').style.display='block';
+  document.getElementById('playerProgress').value=0;
+  document.getElementById('currentTime').textContent='0:00';
+  document.getElementById('durationTime').textContent='0:00';
+  renderPlayerQueue();
+  a.play().catch(()=>{});
+}
+
+function playSong(id){
+  const available=songs.filter(song=>song.audio_url);
+  const index=available.findIndex(song=>song.id===id);
+  if(index<0){alert('Audio is not available.');return;}
+  playerQueue=available;
+  playQueueIndex(index);
 }
 
 function togglePlay(){
   const a=document.getElementById('audio');
-  if(a.paused)a.play();else a.pause();
+  if(!a.src)return;
+  if(a.paused)a.play().catch(()=>{});
+  else a.pause();
 }
+
+function previousSong(){
+  const a=document.getElementById('audio');
+  if(a.currentTime>3){a.currentTime=0;return;}
+  if(playerQueueIndex>0)playQueueIndex(playerQueueIndex-1);
+  else if(playerRepeat==='all'&&playerQueue.length)
+    playQueueIndex(playerQueue.length-1);
+}
+
+function seekPlayer(seconds){
+  const a=document.getElementById('audio');
+  if(Number.isFinite(a.duration)){
+    a.currentTime=Math.max(0,Math.min(a.duration,a.currentTime+seconds));
+  }
+}
+
+let shuffleBag=[];
+
+function refillShuffleBag(){
+  shuffleBag=playerQueue.map((song,index)=>index)
+    .filter(index=>index!==playerQueueIndex);
+  for(let i=shuffleBag.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];
+  }
+}
+
+function nextSong(){
+  if(!playerQueue.length)return;
+  if(playerShuffle&&playerQueue.length>1){
+    if(!shuffleBag.length)refillShuffleBag();
+    if(shuffleBag.length)playQueueIndex(shuffleBag.pop());
+  }else if(playerQueueIndex<playerQueue.length-1){
+    playQueueIndex(playerQueueIndex+1);
+  }else if(playerRepeat==='all'){
+    playQueueIndex(0);
+  }
+}
+
+function toggleShuffle(){
+  playerShuffle=!playerShuffle;
+  document.getElementById('shuffleBtn').classList.toggle('active',playerShuffle);
+}
+
+function cycleRepeat(){
+  playerRepeat=playerRepeat==='off'?'all':
+    playerRepeat==='all'?'one':'off';
+  const button=document.getElementById('repeatBtn');
+  button.textContent=playerRepeat==='one'?'↻¹':'↻';
+  button.classList.toggle('active',playerRepeat!=='off');
+  button.title='Repeat: '+playerRepeat;
+}
+
+function toggleQueue(){
+  document.getElementById('playerQueue').classList.toggle('hide');
+}
+
+const playerAudio=document.getElementById('audio');
+
+playerAudio.addEventListener('play',()=>{
+  document.getElementById('playerPlayBtn').textContent='Ⅱ';
+});
+
+playerAudio.addEventListener('pause',()=>{
+  document.getElementById('playerPlayBtn').textContent='▶';
+});
+
+playerAudio.addEventListener('timeupdate',()=>{
+  const duration=playerAudio.duration;
+  if(Number.isFinite(duration)&&duration>0){
+    document.getElementById('playerProgress').value=
+      Math.round(playerAudio.currentTime/duration*1000);
+    document.getElementById('durationTime').textContent=playerTime(duration);
+  }
+  document.getElementById('currentTime').textContent=
+    playerTime(playerAudio.currentTime);
+});
+
+playerAudio.addEventListener('error',()=>{
+  document.getElementById('playingArtist').textContent=
+    'Unable to play this audio. Please try another track.';
+});
+
+playerAudio.addEventListener('ended',()=>{
+  if(playerRepeat==='one'){
+    playerAudio.currentTime=0;
+    playerAudio.play().catch(()=>{});
+  }else{
+    nextSong();
+  }
+});
+
+document.getElementById('playerProgress').addEventListener('input',event=>{
+  if(Number.isFinite(playerAudio.duration)&&playerAudio.duration>0)
+    playerAudio.currentTime=Number(event.target.value)/1000*playerAudio.duration;
+});
 
 function downloadSong(id){
   const s=songs.find(x=>x.id===id);
