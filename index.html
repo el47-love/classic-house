@@ -309,6 +309,11 @@
 <section class="hero" id="hero"><div><div class="eyebrow">THE SOUND OF AFRICA</div><h1>Your Music.<br><span>Your Platform.</span><br>Your Audience.</h1><p>Discover fresh African sounds, support independent artists and download the music you love. Built in Zambia, made for the world.</p><div class="hero-actions"><button class="btn" onclick="go('explore')">Explore music →</button><button class="btn secondary" onclick="openModal('uploadModal')">I'm an artist · Upload a song</button></div></div><div class="hero-art"><div class="disc"></div><div class="hero-note"><b>CLASSIC HOUSE.COM</b><small>Discover • Stream • Download</small></div></div></section>
 <section class="section" id="musicSection"><div class="section-head"><div><div class="eyebrow">FIND YOUR NEXT FAVOURITE</div><h2 id="sectionTitle">Fresh on Classic House</h2><p class="sub">New sounds from independent artists.</p></div></div>
 <div class="searchrow"><input class="field" id="search" placeholder="Search songs, artists or genres..." oninput="handleSearch()"><button class="btn secondary" onclick="document.getElementById('search').value='';handleSearch()">Clear</button></div>
+<div id="musicCountryFilter" class="artist-filters">
+<select class="field" id="musicCountry" onchange="renderSongs()">
+<option value="">All countries</option>
+</select>
+</div>
 <div id="artistFilters" class="artist-filters hide">
 <select class="field" id="artistCountry" onchange="renderArtists()">
 <option value="">All countries</option>
@@ -410,7 +415,25 @@ let artistsLoaded=false;
 let currentPage='home';
 let selectedGenre='All',pendingSong=null,currentArtist='';
 function save(){}
-async function loadSongs(){ if(!supabaseReady){ document.getElementById('songGrid').innerHTML='<div class="empty">Connect your Supabase project to load published music.</div>'; return; } try { const d=await api('/songs'); songs=d.songs||[]; renderSongs(); } catch(e){ document.getElementById('songGrid').innerHTML='<div class="empty">Could not load music: '+escapeHtml(e.message)+'</div>'; } }
+async function loadSongs(){
+  if(!supabaseReady){
+    document.getElementById('songGrid').innerHTML='<div class="empty">Connect your Supabase project to load published music.</div>';
+    return;
+  }
+  try {
+    const d=await api('/songs');
+    songs=d.songs||[];
+
+    const countries=[...new Set(songs.map(s=>s.artist_country).filter(Boolean))].sort();
+    const countrySelect=document.getElementById('musicCountry');
+    countrySelect.innerHTML='<option value="">All countries</option>'+
+      countries.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join('');
+
+    renderSongs();
+  } catch(e){
+    document.getElementById('songGrid').innerHTML='<div class="empty">Could not load music: '+escapeHtml(e.message)+'</div>';
+  }
+}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makeChips(){document.getElementById('chips').innerHTML=genres.map(g=>`<button class="chip ${g===selectedGenre?'active':''}" onclick="selectedGenre='${g}';makeChips();renderSongs()">${g}</button>`).join('')}
 function songPageUrl(s){
@@ -423,7 +446,8 @@ function songPageUrl(s){
 
 function renderSongs(){
   const q=document.getElementById('search').value.toLowerCase();
-  const list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));
+  const country=document.getElementById('musicCountry').value;
+  const list=songs.filter(s=>s.status==='published'&&(selectedGenre==='All'||s.genre===selectedGenre)&&(!country||s.artist_country===country)&&(`${s.title} ${s.artist} ${s.genre}`).toLowerCase().includes(q));
   const grid=document.getElementById('songGrid');
   const explore=currentPage==='explore';
   grid.classList.toggle('explore-list',explore);
@@ -515,10 +539,12 @@ function go(page){
 
   const artistPage=page==='artists';
   document.getElementById('artistFilters').classList.toggle('hide',!artistPage);
+  document.getElementById('musicCountryFilter').classList.toggle('hide',artistPage);
   document.getElementById('chips').classList.toggle('hide',artistPage);
 
   if(page==='trending'){
     selectedGenre='All';
+    document.getElementById('musicCountry').value='';
     document.getElementById('search').value='';
     songs.sort((a,b)=>(b.downloads||0)-(a.downloads||0));
   }
