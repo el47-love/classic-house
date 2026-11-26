@@ -388,6 +388,9 @@
 <div class="formgroup"><label>Artist / stage name *</label><input class="field" name="artist" required placeholder="Your artist name"></div>
 <div class="formgroup"><label>Song title *</label><input class="field" name="title" required placeholder="Song title"></div>
 <div class="formgroup"><label>Genre *</label><select class="field" name="genre" required><option value="">Choose genre</option><option>Zambian Music</option><option>Afrobeat</option><option>Hip-hop</option><option>Dancehall</option><option>Gospel</option><option>R&B</option><option>Amapiano</option><option>Afro-pop</option><option>Reggae</option><option>Traditional Music</option><option>International</option></select></div>
+<div class="formgroup"><label>Artist country *</label><input class="field" name="artist_country" list="songCountryOptions" required maxlength="100" placeholder="Choose or type country"><datalist id="songCountryOptions">
+<option value="Zambia"><option value="South Africa"><option value="Zimbabwe"><option value="Malawi"><option value="Botswana"><option value="Namibia"><option value="Angola"><option value="Mozambique"><option value="Tanzania"><option value="Kenya"><option value="Uganda"><option value="Rwanda"><option value="Burundi"><option value="Democratic Republic of the Congo"><option value="Ghana"><option value="Nigeria"><option value="Ethiopia"><option value="Somalia"><option value="Senegal"><option value="Cameroon"><option value="United Kingdom"><option value="United States"><option value="Canada"><option value="Australia"><option value="New Zealand"><option value="India"><option value="China"><option value="Japan"><option value="Brazil"><option value="France"><option value="Germany"><option value="Italy"><option value="Spain"><option value="Netherlands"><option value="Portugal"><option value="Jamaica"><option value="Mexico"><option value="United Arab Emirates">
+</datalist></div>
 <div class="formgroup"><label>Producer (optional)</label><input class="field" name="producer" placeholder="Producer name"></div>
 <div class="formgroup full"><label>Song description (optional)</label><textarea class="field" name="description" rows="2" placeholder="Tell listeners about this song"></textarea></div>
 <div class="formgroup"><label>MP3 audio file *</label><input class="field" name="audio" type="file" accept="audio/mpeg,audio/mp3,audio/*" required></div>
@@ -678,6 +681,7 @@ document.getElementById('uploadForm').addEventListener('submit', async e => {
       body: {
         title: f.title.value.trim(),
         artist: f.artist.value.trim(),
+        artist_country: f.artist_country.value.trim(),
         genre: f.genre.value,
         producer: f.producer.value.trim(),
         description: f.description.value.trim(),
