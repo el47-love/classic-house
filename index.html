@@ -839,6 +839,87 @@ alert('Artist profile saved successfully.');
 }catch(e){alert('Could not save profile: '+e.message);}
 }
 
+
+let registeredArtistsPage = 1;
+
+async function loadRegisteredArtists(page = 1) {
+  const content = document.getElementById('dashContent');
+
+  registeredArtistsPage = Math.max(1, page);
+  content.innerHTML = '<p class="muted">Loading registered artists...</p>';
+
+  try {
+    const d = await api('/admin-artists?page=' + registeredArtistsPage + '&limit=25');
+    const artists = d.artists || [];
+
+    const rows = artists.map(a => {
+      const name = escapeHtml(a.artist_name || 'Unknown Artist');
+      const email = escapeHtml(a.email || '');
+      const mailto = encodeURIComponent(a.email || '');
+      const location = [a.city, a.country].filter(Boolean).map(escapeHtml).join(', ');
+      const genres = (a.genres || []).map(escapeHtml).join(', ');
+      const bio = escapeHtml(a.bio || '');
+      const date = a.registered_at
+        ? escapeHtml(new Date(a.registered_at).toLocaleDateString())
+        : 'Unknown';
+      const verified = a.email_confirmed
+        ? '<span class="status">Confirmed</span>'
+        : '<span class="status">Not confirmed</span>';
+
+      return `<tr>
+        <td><b>${name}</b>${bio ? `<br><small class="muted">${bio}</small>` : ''}</td>
+        <td>${email ? `<a href="mailto:${mailto}">${email}</a>` : '—'}</td>
+        <td>${date}</td>
+        <td>${location || '—'}</td>
+        <td>${genres || '—'}</td>
+        <td>${Number(a.song_count) || 0}</td>
+        <td>${verified}</td>
+      </tr>`;
+    }).join('');
+
+    const totalPages = d.total != null && Number.isFinite(Number(d.total))
+      ? Math.max(1, Math.ceil(Number(d.total) / d.limit))
+      : null;
+
+    content.innerHTML = `
+      <div class="statgrid">
+        <div class="stat"><small>Registered artists</small><strong>${d.total ?? '—'}</strong></div>
+        <div class="stat"><small>Artists on this page</small><strong>${artists.length}</strong></div>
+        <div class="stat"><small>Page</small><strong>${d.page}</strong></div>
+      </div>
+      ${artists.length ? `
+        <div class="tablewrap">
+          <table>
+            <tr>
+              <th>Artist</th>
+              <th>Email</th>
+              <th>Registered</th>
+              <th>Location</th>
+              <th>Genres</th>
+              <th>Songs</th>
+              <th>Email status</th>
+            </tr>
+            ${rows}
+          </table>
+        </div>
+      ` : '<p class="muted">No registered artist accounts found.</p>'}
+      <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin:18px 0;flex-wrap:wrap">
+        <button class="btn secondary small"
+          ${registeredArtistsPage <= 1 ? 'disabled' : ''}
+          onclick="loadRegisteredArtists(${registeredArtistsPage - 1})">Previous</button>
+        <span class="muted">Page ${d.page}${totalPages ? ' of ' + totalPages : ''}</span>
+        <button class="btn secondary small"
+          ${!d.next_page ? 'disabled' : ''}
+          onclick="loadRegisteredArtists(${Number(d.next_page) || registeredArtistsPage + 1})">Next</button>
+      </div>
+    `;
+  } catch (e) {
+    content.innerHTML = '<p class="muted">' +
+      escapeHtml(e.message || 'Could not load registered artists.') +
+      '</p>';
+  }
+}
+
 async function dashTab(which,el){
 if(el){
 document.querySelectorAll('#dashboardModal .tab').forEach(x=>x.classList.remove('active'));
@@ -853,13 +934,7 @@ await showDashboard();
 return;
 }
 if(which==='artists'){
-try{
-const d=await api('/admin-artists');
-const artists=d.artists||[];
-document.getElementById('dashContent').innerHTML=artists.length?`<div class="tablewrap"><table><tr><th>Artist</th><th>Email / Contact</th><th>Location</th><th>Genres</th><th>Registered</th><th>Songs</th><th>Email status</th></tr>${artists.map(a=>`<tr><td><b>${escapeHtml(a.artist_name)}</b>${a.bio?'<br><small class="muted">'+escapeHtml(a.bio)+'</small>':''}</td><td><a href="mailto:${escapeHtml(a.email)}">${escapeHtml(a.email||'No email')}</a></td><td>${escapeHtml([a.city,a.country].filter(Boolean).join(', ')||'Not provided')}</td><td>${escapeHtml((a.genres||[]).join(', ')||'Not specified')}</td><td>${a.created_at?escapeHtml(new Date(a.created_at).toLocaleDateString()):'Unknown'}</td><td><b>${Number(a.song_count)||0}</b></td><td>${a.email_confirmed_at?'Confirmed':'Not confirmed'}</td></tr>`).join('')}</table></div><p class="muted" style="font-size:12px">Registered artists: ${artists.length}. This directory includes artists who have not uploaded any songs.</p>`:'<p class="muted">No registered artist accounts found yet.</p>';
-}catch(e){
-document.getElementById('dashContent').innerHTML='<p class="muted">'+escapeHtml(e.message)+'</p>';
-}
+await loadRegisteredArtists(1);
 return;
 }
 if(which!=='admin')return;
